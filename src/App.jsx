@@ -1,67 +1,25 @@
-import { useEffect, useState } from "react"
-import { supabase } from "./supabaseClient"
+import { BrowserRouter, Routes, Route, Link } from "react-router-dom"
+import Empleados from "./pages/Empleados"
+import Turnos from "./pages/Turnos"
+import Login from "./pages/Login"
 
 function App() {
-  const [empleados, setEmpleados] = useState([])
-  const [nuevoEmpleado, setNuevoEmpleado] = useState({ nombre: "", apellido: "", puesto: "" })
-
-  useEffect(() => {
-    fetchEmpleados()
-  }, [])
-
-  async function fetchEmpleados() {
-    const { data, error } = await supabase.from("empleados").select("*")
-    if (error) console.error(error)
-    else setEmpleados(data)
-  }
-
-  async function agregarEmpleado(e) {
-    e.preventDefault()
-    const { data, error } = await supabase
-      .from("empleados")
-      .insert([nuevoEmpleado])
-      .select()
-    if (error) console.error(error)
-    else {
-      setEmpleados([...empleados, ...data])
-      setNuevoEmpleado({ nombre: "", apellido: "", puesto: "" })
-    }
-  }
-
   return (
-    <div style={{ padding: "2rem" }}>
-      <h1>Listado de Empleados</h1>
-      <ul>
-        {empleados.map((emp) => (
-          <li key={emp.id}>
-            {emp.nombre} {emp.apellido} – {emp.puesto}
-          </li>
-        ))}
-      </ul>
+    <BrowserRouter>
+      <nav style={{ padding: "1rem", background: "#f0f0f0" }}>
+        <Link to="/">Inicio</Link> |{" "}
+        <Link to="/empleados">Empleados</Link> |{" "}
+        <Link to="/turnos">Turnos</Link> |{" "}
+        <Link to="/login">Login</Link>
+      </nav>
 
-      <h2>Agregar Empleado</h2>
-      <form onSubmit={agregarEmpleado}>
-        <input
-          type="text"
-          placeholder="Nombre"
-          value={nuevoEmpleado.nombre}
-          onChange={(e) => setNuevoEmpleado({ ...nuevoEmpleado, nombre: e.target.value })}
-        />
-        <input
-          type="text"
-          placeholder="Apellido"
-          value={nuevoEmpleado.apellido}
-          onChange={(e) => setNuevoEmpleado({ ...nuevoEmpleado, apellido: e.target.value })}
-        />
-        <input
-          type="text"
-          placeholder="Puesto"
-          value={nuevoEmpleado.puesto}
-          onChange={(e) => setNuevoEmpleado({ ...nuevoEmpleado, puesto: e.target.value })}
-        />
-        <button type="submit">Agregar</button>
-      </form>
-    </div>
+      <Routes>
+        <Route path="/" element={<h1>Bienvenido al Turnero EJSEDSA</h1>} />
+        <Route path="/empleados" element={<Empleados />} />
+        <Route path="/turnos" element={<Turnos />} />
+        <Route path="/login" element={<Login />} />
+      </Routes>
+    </BrowserRouter>
   )
 }
 
