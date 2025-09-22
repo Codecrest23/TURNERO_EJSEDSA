@@ -15,13 +15,20 @@ export default function Empleados() {
 
   async function fetchEmpleados() {
     const { data, error } = await supabase
-      .from("empleados")
-      .select("id_empleado, empleado_nombre_apellido, empleado_id_funcion, empleado_id_sector")
+    .from("empleados")
+    .select(`
+        id_empleado,
+        empleado_nombre_apellido,
+        funciones_empleados:empleado_id_funcion ( funcion_empleado_nombre ),
+        sectores_empleados:empleado_id_sector ( sector_empleado_nombre )
+        `)
 
     if (error) {
       console.error("Error al obtener empleados:", error.message)
     } else {
       setEmpleados(data)
+      console.log("empleados:",data)
+      
     }
   }
 
@@ -53,6 +60,7 @@ export default function Empleados() {
         <table className="min-w-full text-sm text-left text-gray-600">
           <thead className="bg-gray-200 text-xs uppercase text-gray-700">
             <tr>
+              <th className="px-6 py-3">N° de Orden</th>
               <th className="px-6 py-3">ID</th>
               <th className="px-6 py-3">Nombre y Apellido</th>
               <th className="px-6 py-3">Función</th>
@@ -60,12 +68,13 @@ export default function Empleados() {
             </tr>
           </thead>
           <tbody>
-            {empleados.map((emp) => (
+            {empleados.map((emp,index) => (
               <tr key={emp.id_empleado} className="border-b hover:bg-gray-50 transition">
+                <td className="px-6 py-3">{index + 1}</td> {/* 👈 Número de orden */}
                 <td className="px-6 py-3">{emp.id_empleado}</td>
                 <td className="px-6 py-3">{emp.empleado_nombre_apellido}</td>
-                <td className="px-6 py-3">{emp.empleado_id_funcion}</td>
-                <td className="px-6 py-3">{emp.empleado_id_sector}</td>
+                <td className="px-6 py-3">{emp.funciones_empleados?.funcion_empleado_nombre}</td>
+                <td className="px-6 py-3">{emp.sectores_empleados?.sector_empleado_nombre}</td>
               </tr>
             ))}
           </tbody>
