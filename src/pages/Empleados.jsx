@@ -20,7 +20,8 @@ export default function Empleados() {
         id_empleado,
         empleado_nombre_apellido,
         funciones_empleados:empleado_id_funcion ( funcion_empleado_nombre ),
-        sectores_empleados:empleado_id_sector ( sector_empleado_nombre )
+        sectores_empleados:empleado_id_sector ( sector_empleado_nombre ),
+        localidades:empleado_id_localidad ( localidad_nombre )
         `)
 
     if (error) {
@@ -60,7 +61,8 @@ export default function Empleados() {
         <table className="min-w-full text-sm text-left text-gray-600">
           <thead className="bg-gray-200 text-xs uppercase text-gray-700">
             <tr>
-              <th className="px-6 py-3">N° de Orden</th>
+              <th className="px-6 py-3">Numero de Orden</th>
+              <th className="px-6 py-3">Localidad</th>
               <th className="px-6 py-3">ID</th>
               <th className="px-6 py-3">Nombre y Apellido</th>
               <th className="px-6 py-3">Función</th>
@@ -70,7 +72,8 @@ export default function Empleados() {
           <tbody>
             {empleados.map((emp,index) => (
               <tr key={emp.id_empleado} className="border-b hover:bg-gray-50 transition">
-                <td className="px-6 py-3">{index + 1}</td> {/* 👈 Número de orden */}
+                <td className="px-6 py-3">{index+1}</td>{/*Número de orden */}
+                <td className="px-6 py-3">{emp.localidades?.localidad_nombre || "Varias"}</td>{/*Si no trae localidad setea por defecto VARIAS*/}
                 <td className="px-6 py-3">{emp.id_empleado}</td>
                 <td className="px-6 py-3">{emp.empleado_nombre_apellido}</td>
                 <td className="px-6 py-3">{emp.funciones_empleados?.funcion_empleado_nombre}</td>
