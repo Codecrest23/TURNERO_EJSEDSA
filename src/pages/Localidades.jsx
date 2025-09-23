@@ -1,12 +1,11 @@
 import { useEffect, useState } from "react"
-import { useEmpleados } from "../hooks/useEmpleados"
+import { useLocalidades } from "../hooks/useLocalidades"
 
-export default function Empleados() {
-  const { empleados, loading, agregarEmpleado } = useEmpleados()
-  const [nuevoEmpleado, setNuevoEmpleado] = useState({
-    empleado_nombre_apellido: "",
-    empleado_id_funcion: "",
-    empleado_id_sector: "",
+export default function Localidades() {
+  const { localidades,loading, agregarLocalidad } = useLocalidades()
+  const [nuevalocalidad, setNuevaLocalidad] = useState({
+    localidad_nombre: "",
+    localidad_id_zona: ""
   })
 
   if (loading) return <p>Cargando...</p>
@@ -22,21 +21,15 @@ export default function Empleados() {
             <tr>
               <th className="px-6 py-3">Numero de Orden</th>
               <th className="px-6 py-3">Localidad</th>
-              <th className="px-6 py-3">ID</th>
-              <th className="px-6 py-3">Nombre y Apellido</th>
-              <th className="px-6 py-3">Función</th>
-              <th className="px-6 py-3">Sector</th>
+              <th className="px-6 py-3">Zona</th>
             </tr>
           </thead>
           <tbody>
-            {empleados.map((emp,index) => (
-              <tr key={emp.id_empleado} className="border-b hover:bg-gray-50 transition">
+            {localidades.map((loc,index) => (
+              <tr key={loc.id_localidad} className="border-b hover:bg-gray-50 transition">
                 <td className="px-6 py-3">{index+1}</td>{/*Número de orden */}
-                <td className="px-6 py-3">{emp.localidades?.localidad_nombre || "Varias"}</td>{/*Si no trae localidad setea por defecto VARIAS*/}
-                <td className="px-6 py-3">{emp.id_empleado}</td>
-                <td className="px-6 py-3">{emp.empleado_nombre_apellido}</td>
-                <td className="px-6 py-3">{emp.funciones_empleados?.funcion_empleado_nombre}</td>
-                <td className="px-6 py-3">{emp.sectores_empleados?.sector_empleado_nombre}</td>
+                <td className="px-6 py-3">{loc.localidad_nombre}</td>
+                <td className="px-6 py-3">{loc.zonas.zona_nombre}</td>
               </tr>
             ))}
           </tbody>
@@ -44,7 +37,7 @@ export default function Empleados() {
       </div>
 
       {/* Formulario agregar */}
-      <div className="mt-8 bg-white p-6 shadow-md rounded-lg">
+      {/* <div className="mt-8 bg-white p-6 shadow-md rounded-lg">
         <h2 className="text-xl font-semibold mb-4">➕ Agregar Empleado</h2>
         <form onSubmit={agregarEmpleado} className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <input
@@ -78,7 +71,7 @@ export default function Empleados() {
             Agregar
           </button>
         </form>
-      </div>
+      </div> */}
     </div>
   )
 }
