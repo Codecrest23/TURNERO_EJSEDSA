@@ -12,7 +12,7 @@ export default function Localidades() {
 
   return (
     <div className="min-h-screen bg-gray-100 p-8">
-      <h1 className="text-3xl font-bold mb-6">Empleados</h1>
+      <h1 className="text-3xl font-bold mb-6">Localidades</h1>
         <h2 className="text-3xl font-bold mb-6">Listado</h2>
       {/* Tabla de empleados */}
       <div className="overflow-x-auto bg-white shadow-md rounded-lg">
