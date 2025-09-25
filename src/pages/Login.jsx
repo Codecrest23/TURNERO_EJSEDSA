@@ -21,7 +21,7 @@ export default function Login() {
     } else {
       console.log("Usuario logueado:", data.user)
       // podés redirigir a otra ruta o guardar el usuario en un context
-       navigate("/")
+       navigate("/calendario")
     }
   }
 
