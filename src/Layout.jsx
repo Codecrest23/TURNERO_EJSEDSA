@@ -1,6 +1,6 @@
 import { Outlet, Link } from "react-router-dom"
 import { useState } from "react"
-import { Menu, X } from "lucide-react" // iconos (npm i lucide-react)
+import { Menu, X, Home, Users, Calendar, Map, Layers, LogIn } from "lucide-react"
 
 export default function Layout() {
   const [open, setOpen] = useState(true)
@@ -14,55 +14,23 @@ export default function Layout() {
       >
         {/* Header del sidebar */}
         <div className="flex items-center justify-between p-4">
-          <span className={`${!open && "hidden"} font-bold text-lg`}>
-            Turnero SAP
-          </span>
+          {open && <span className="font-bold text-lg">Turnero SAP</span>}
           <button
             onClick={() => setOpen(!open)}
             className="text-white focus:outline-none"
           >
-            {open ? <X size={30} /> : <Menu size={30} />}
+            {open ? <X size={20} /> : <Menu size={20} />}
           </button>
         </div>
 
         {/* Links */}
         <nav className="flex flex-col gap-2 p-2">
-          <Link
-            to="/"
-            className="px-3 py-2 rounded hover:bg-gray-700 transition"
-          >
-            Inicio
-          </Link>
-          <Link
-            to="/empleados"
-            className="px-3 py-2 rounded hover:bg-gray-700 transition"
-          >
-            Empleados
-          </Link>
-          <Link
-            to="/turnos"
-            className="px-3 py-2 rounded hover:bg-gray-700 transition"
-          >
-            Turnos
-          </Link>
-          <Link
-            to="/localidades"
-            className="px-3 py-2 rounded hover:bg-gray-700 transition"
-          >
-            Localidades
-          </Link>
-          <Link
-            to="/zonas"
-            className="px-3 py-2 rounded hover:bg-gray-700 transition"
-          >
-            Zonas
-          </Link>
-          <Link
-            to="/login"
-            className="px-3 py-2 rounded hover:bg-gray-700 transition"
-          >
-            Login
-          </Link>
+          <SidebarLink to="/" icon={<Home size={20} />} open={open} label="Inicio" />
+          <SidebarLink to="/empleados" icon={<Users size={20} />} open={open} label="Empleados" />
+          <SidebarLink to="/turnos" icon={<Calendar size={20} />} open={open} label="Turnos" />
+          <SidebarLink to="/localidades" icon={<Map size={20} />} open={open} label="Localidades" />
+          <SidebarLink to="/zonas" icon={<Layers size={20} />} open={open} label="Zonas" />
+          <SidebarLink to="/login" icon={<LogIn size={20} />} open={open} label="Login" />
         </nav>
       </div>
 
@@ -71,5 +39,18 @@ export default function Layout() {
         <Outlet />
       </main>
     </div>
+  )
+}
+
+/* 🔹 Componente auxiliar para los links */
+function SidebarLink({ to, icon, label, open }) {
+  return (
+    <Link
+      to={to}
+      className="flex items-center gap-3 px-3 py-2 rounded hover:bg-gray-700 transition"
+    >
+      {icon}
+      {open && <span>{label}</span>}
+    </Link>
   )
 }
