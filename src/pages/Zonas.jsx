@@ -1,12 +1,30 @@
-import { useEffect, useState } from "react"
+import { useState } from "react"
 import { useZonas } from "../hooks/useZonas"
 
 export default function Zonas() {
-  const { zonas,loading, agregarZona } = useZonas()
+  const { zonas,loading, agregarZonas } = useZonas()
   const [nuevaZona, setNuevaZona] = useState({
     zona_nombre: ""
   })
 
+  //para manejar la recarga de la pagina
+    const handleSubmit = async (e) => {
+    e.preventDefault() // Prevenir recarga de página
+    
+    if (!nuevaZona.zona_nombre.trim())  {
+    console.log("Campo vacío");
+    return;
+  } // Validación básica
+    try{
+    await agregarZonas(nuevaZona)
+    
+    // Limpiar el formulario después de agregar
+    setNuevaZona({ zona_nombre: "" })
+    }catch (error) {
+    console.error("Error en handleSubmit:", error);
+  }
+  }
+  //fin - para manejar la recarga de la pagina
   if (loading) return <p>Cargando...</p>
 
   return (
@@ -34,30 +52,14 @@ export default function Zonas() {
       </div>
 
       {/* Formulario agregar */}
-      {/* <div className="mt-8 bg-white p-6 shadow-md rounded-lg">
-        <h2 className="text-xl font-semibold mb-4">➕ Agregar Empleado</h2>
-        <form onSubmit={agregarEmpleado} className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div className="mt-8 bg-white p-6 shadow-md rounded-lg">
+        <h2 className="text-xl font-semibold mb-4">➕ Agregar Zona</h2>
+        <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <input
             type="text"
-            placeholder="Nombre y Apellido"
-            value={nuevoEmpleado.empleado_nombre_apellido}
-            onChange={(e) => setNuevoEmpleado({ ...nuevoEmpleado, empleado_nombre_apellido: e.target.value })}
-            required
-            className="border rounded px-3 py-2 focus:outline-none focus:ring focus:ring-blue-300"
-          />
-          <input
-            type="number"
-            placeholder="ID Función"
-            value={nuevoEmpleado.empleado_id_funcion}
-            onChange={(e) => setNuevoEmpleado({ ...nuevoEmpleado, empleado_id_funcion: e.target.value })}
-            required
-            className="border rounded px-3 py-2 focus:outline-none focus:ring focus:ring-blue-300"
-          />
-          <input
-            type="number"
-            placeholder="ID Sector"
-            value={nuevoEmpleado.empleado_id_sector}
-            onChange={(e) => setNuevoEmpleado({ ...nuevoEmpleado, empleado_id_sector: e.target.value })}
+            placeholder="Nombre de Zona"
+            value={nuevaZona.zona_nombre}
+            onChange={(e) => setNuevaZona({ ...nuevaZona, zona_nombre: e.target.value })}
             required
             className="border rounded px-3 py-2 focus:outline-none focus:ring focus:ring-blue-300"
           />
@@ -68,7 +70,7 @@ export default function Zonas() {
             Agregar
           </button>
         </form>
-      </div> */}
+      </div>
     </div>
   )
 }

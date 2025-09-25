@@ -26,8 +26,24 @@ export function useZonas() {
   }
 
   async function agregarZonas(nuevaZona) {
+    //para ver si estoy autenticado
+//     const { data: { user }, error: authError } = await supabase.auth.getUser()
+  
+//   if (authError) {
+//     console.error("Error de autenticación:", authError.message)
+//     return
+//   }
+  
+//   if (!user) {
+//     console.error("Usuario no autenticado")
+//     return
+//   }
+  
+//   console.log("Usuario autenticado:", user.email)
+    // fin para ver si estoy autenticado
+
     const { data, error } = await supabase
-      .from("Zonas")
+      .from("zonas")
       .insert([nuevaZona])
       .select()
 
