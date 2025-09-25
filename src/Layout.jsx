@@ -37,8 +37,8 @@ export default function Layout() {
         <nav className="flex flex-col gap-2 p-2">
           <SidebarLink to="/calendario" icon={<Calendar size={20} />} open={open} label="Planificación" />
           {/* <SidebarLink to="/" icon={<Home size={20} />} open={open} label="Inicio" /> */}
-          {rol === "Admin" && (<SidebarLink to="/empleados" icon={<Users size={20} />} open={open} label="Empleados" />)}
-          {rol === "Admin" && (<SidebarLink to="/turnos" icon={<Clock size={20} />} open={open} label="Turnos" />)}
+          {(rol === "Admin" || rol === "Supervisor") && (<SidebarLink to="/empleados" icon={<Users size={20} />} open={open} label="Empleados" />)}
+          {(rol === "Admin" || rol === "Supervisor") && (<SidebarLink to="/turnos" icon={<Clock size={20} />} open={open} label="Turnos" />)}
           {rol === "Admin" && (<SidebarLink to="/localidades" icon={<Map size={20} />} open={open} label="Localidades" />)}
           {rol === "Admin" && (<SidebarLink to="/zonas" icon={<Layers size={20} />} open={open} label="Zonas" />)}
           {/* <SidebarLink to="/login" icon={<LogIn size={20} />} open={open} label="Login" /> */}

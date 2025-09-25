@@ -17,7 +17,7 @@ export function AuthProvider({ children }) {
         const { data: perfil, error } = await supabase
         .from("perfiles")
         .select("perfil_rol")
-            .eq("id_usuario", user.id)
+        .eq("id_usuario", user.id)
         .single()
             if (error) {
              console.error("Error trayendo rol:", error.message)

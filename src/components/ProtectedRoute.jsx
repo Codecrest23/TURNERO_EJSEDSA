@@ -9,7 +9,7 @@ export default function ProtectedRoute({ children, allowedRoles }) {
 
   // 👉 si hay restricción de roles y el rol no está permitido
   if (allowedRoles && !allowedRoles.includes(rol)) {
-    return <Navigate to="/" replace />
+    return <Navigate to="/calendario" replace />
   }
 
   return children
