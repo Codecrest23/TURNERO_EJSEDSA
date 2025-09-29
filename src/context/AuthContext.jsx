@@ -30,31 +30,32 @@ export function AuthProvider({ children }) {
     getUser()
 
     // Escuchar cambios de sesión
-    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null)
-    })
+    // const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
+    //   setUser(session?.user ?? null)
+    // })
     // Escuchar cambios de sesión
-        // const { data: listener } = supabase.auth.onAuthStateChange(async (_event, session) => {
-        // setLoading(true)   // 👈 importante
-        // const newUser = session?.user ?? null
-        // setUser(newUser)
+        const { data: listener } = supabase.auth.onAuthStateChange(async (_event, session) => {
+            console.log("Cambio de sesión:", _event, session)  // PARA REVISAR
+        setLoading(true)   // 👈 importante
+        const newUser = session?.user ?? null
+        setUser(newUser)
 
-        // if (newUser) {
-        //     const { data: perfil, error } = await supabase
-        //     .from("perfiles")
-        //     .select("perfil_rol")
-        //     .eq("id_usuario", newUser.id)
-        //     .single()
+        if (newUser) {
+            const { data: perfil, error } = await supabase
+            .from("perfiles")
+            .select("perfil_rol")
+            .eq("id_usuario", newUser.id)
+            .single()
 
-        //     if (error) {
-        //     console.error("Error trayendo rol:", error.message)
-        //     }
-        //     setRol(perfil?.perfil_rol || null)
-        // } else {
-        //     setRol(null) // 👈 limpiar rol si se desloguea
-        // }
-        // setLoading(false)   // 👈 cerrar loading siempre
-        // })
+            if (error) {
+            console.error("Error trayendo rol:", error.message)
+            }
+            setRol(perfil?.perfil_rol || null)
+        } else {
+            setRol(null) // 👈 limpiar rol si se desloguea
+        }
+        setLoading(false)   // 👈 cerrar loading siempre
+        })
 
 
     return () => {
