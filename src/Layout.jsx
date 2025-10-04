@@ -9,7 +9,7 @@ export default function Layout() {
   //agregado para logOut
   const navigate = useNavigate()
   const { rol } = useAuth()  // 👈 traemos el rol
-  console.log("rol",rol)
+  //console.log("rol",rol)
   const handleLogout = async () => {
     await supabase.auth.signOut()
     navigate("/") // vuelve al login

@@ -8,13 +8,15 @@ export function useZonas() {
   useEffect(() => {
     fetchzonas()
   }, [])
-
+//Buscar Zona
   async function fetchzonas() {
     const { data, error } = await supabase
       .from("zonas")
       .select(`
         id_zona,
-        zona_nombre
+        zona_nombre,
+        zona_cantidad_localidades,
+        zona_cantidad_empleados
       `)
 
     if (error) {
@@ -24,24 +26,8 @@ export function useZonas() {
     }
    setLoading(false)
   }
-
+  //Agregar Zona
   async function agregarZonas(nuevaZona) {
-    //para ver si estoy autenticado
-//     const { data: { user }, error: authError } = await supabase.auth.getUser()
-  
-//   if (authError) {
-//     console.error("Error de autenticación:", authError.message)
-//     return
-//   }
-  
-//   if (!user) {
-//     console.error("Usuario no autenticado")
-//     return
-//   }
-  
-//   console.log("Usuario autenticado:", user.email)
-    // fin para ver si estoy autenticado
-
     const { data, error } = await supabase
       .from("zonas")
       .insert([nuevaZona])
@@ -53,6 +39,35 @@ export function useZonas() {
       setZonas((prev) => [...prev, ...data])
     }
   }
+  //Modificar una zona
+  async function modificarZona(id_zona, camposActualizados) {
+    const { data, error } = await supabase
+      .from("zonas")
+      .update(camposActualizados) // { zona_nombre: "...", zona_cantidad_empleados: ... }
+      .eq("id_zona", id_zona)
+      .select()
 
-  return { zonas,loading, agregarZonas }
+    if (error) {
+      console.error("Error al modificar la Zona:", error.message)
+    } else {
+      setZonas((prev) =>
+        prev.map((z) => (z.id_zona === id_zona ? { ...z, ...data[0] } : z))
+      )
+    }
+  }
+
+  //Eliminar una zona
+  async function eliminarZona(id_zona) {
+    const { error } = await supabase
+      .from("zonas")
+      .delete()
+      .eq("id_zona", id_zona)
+
+    if (error) {
+      console.error("Error al eliminar la Zona:", error.message)
+    } else {
+      setZonas((prev) => prev.filter((z) => z.id_zona !== id_zona))
+    }
+  }
+  return { zonas,loading, agregarZonas, modificarZona, eliminarZona }
 }

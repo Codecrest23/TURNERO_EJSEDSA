@@ -1,51 +1,54 @@
-import { useState, useEffect } from "react"
-import { supabase } from "../lib/supabaseClient"
-import { useNavigate } from "react-router-dom"
-import { useAuth } from "../context/AuthContext"
+import { useState, useEffect } from "react";
+import { supabase } from "../lib/supabaseClient";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 
 export default function Login() {
-  const [email, setEmail] = useState("")
-  const [password, setPassword] = useState("")
-  const [error, setError] = useState(null)
-  const navigate = useNavigate()
-  const { user, loading } = useAuth()   // 👈 traemos user del contexto
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [submitError, setSubmitError] = useState(null);
+  const [submitting, setSubmitting] = useState(false);
+  const navigate = useNavigate();
+  const { user, loading } = useAuth();
 
   const handleLogin = async (e) => {
-    e.preventDefault()
-    console.log("handleLogin ejecutado con:", email, password)  // PARA REVISAR
-    setError(null)
+    e.preventDefault();
+    //console.log("handleLogin ejecutado con:", email, password);
+    setSubmitError(null);
+    setSubmitting(true);
 
-    const { data,error:loginError  } = await supabase.auth.signInWithPassword({
+    const { data, error } = await supabase.auth.signInWithPassword({
       email,
       password,
-    })     
+    });
 
-  console.log("Resultado login:", data, loginError)  // PARA REVISAR
+    //console.log("Resultado login:", data, error); // ← LOG #2
 
-    if (loginError) {
-      setError(loginError.message)
-    } else {
-      console.log("Login correcto, esperando contexto...")
-      // 👈 no navegues acá
+    if (error) {
+      setSubmitError(error.message);
+      setSubmitting(false);
+      return;
     }
-  }
+    setSubmitting(false)
+    // No navegamos acá. Esperamos a que el contexto reciba la sesión.
+    // (onAuthStateChange ya disparó y actualizará user/rol).
+  };
 
-  // 👇 Cuando user se setea en el contexto y ya no está cargando → navegar
+  // Cuando el contexto ya tiene user y no está cargando → ir a /calendario
   useEffect(() => {
     if (user && !loading) {
-      console.log("Navegando a /calendario") 
-      navigate("/calendario")
+      //console.log("Navegando a /calendario"); // ← LOG #4
+      navigate("/calendario", { replace: true });
     }
-  }, [user, loading, navigate])
+  }, [user, loading, navigate]);
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100">
-      <form
-        onSubmit={handleLogin}
-        className="bg-white p-6 rounded-lg shadow-md w-96"
-      >
+      <form onSubmit={handleLogin} className="bg-white p-6 rounded-lg shadow-md w-96">
         <h2 className="text-2xl font-bold mb-4">Login</h2>
-        {error && <p className="text-red-500 mb-2">{error}</p>}
+
+        {submitError && <p className="text-red-500 mb-2">{submitError}</p>}
+
         <input
           type="email"
           placeholder="Email"
@@ -54,6 +57,7 @@ export default function Login() {
           className="border rounded w-full px-3 py-2 mb-3"
           required
         />
+
         <input
           type="password"
           placeholder="Contraseña"
@@ -62,13 +66,15 @@ export default function Login() {
           className="border rounded w-full px-3 py-2 mb-3"
           required
         />
+
         <button
           type="submit"
-          className="w-full bg-blue-600 text-white rounded py-2 hover:bg-blue-700 transition"
+          disabled={submitting}
+          className="w-full bg-blue-600 text-white rounded py-2 hover:bg-blue-700 transition disabled:opacity-60"
         >
-          Ingresar
+          {submitting ? "Ingresando..." : "Ingresar"}
         </button>
       </form>
     </div>
-  )
+  );
 }
