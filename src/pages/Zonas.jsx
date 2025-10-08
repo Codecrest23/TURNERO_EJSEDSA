@@ -46,7 +46,7 @@ export default function Zonas() {
       </div>
     </Title>
 
-      <Subtitle>Listado</Subtitle>
+      <Subtitle>Listado de zonas</Subtitle>
       {/* Tabla con UI */}
       <Table headers={["N°", "Zona", "Localidades", "Empleados", "Acciones"]}>
         {zonas.map((zon, index) => (
