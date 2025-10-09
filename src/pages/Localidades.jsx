@@ -59,10 +59,10 @@ export default function Localidades() {
           {localidades.map((loc, index) => (
             <tr
               key={loc.id_localidad}
-              onClick={() => setLocalidadSeleccionada(loc)}
+              onClick={() => setLocalidadSeleccionada(localidadSeleccionada?.id_localidad === loc.id_localidad ? null : loc)}
               className={`border-b hover:bg-gray-100 transition cursor-pointer ${
                 localidadSeleccionada?.id_localidad === loc.id_localidad
-                  ? "bg-blue-50"
+                  ? "bg-blue-100"
                   : ""
               }`}
             >
@@ -78,7 +78,7 @@ export default function Localidades() {
       <div className="flex justify-end gap-2 mt-4">
         <Button
           variant="warning"
-          onClick={() => setLocalidadEditando(localidadSeleccionada)}
+          onClick={() => setLocalidadEditando({...localidadSeleccionada, localidad_id_zona: localidadSeleccionada?.zonas?.id_zona || "",})}
           disabled={!localidadSeleccionada}
           className={!localidadSeleccionada ? "opacity-50 cursor-not-allowed" : ""}
         >
@@ -111,6 +111,7 @@ export default function Localidades() {
               setNuevaLocalidad({ ...nuevaLocalidad, localidad_nombre: e.target.value })
             }
             className="border rounded px-3 py-2 w-full"
+            required
           />
           <select
             value={nuevaLocalidad.localidad_id_zona}
@@ -118,6 +119,7 @@ export default function Localidades() {
               setNuevaLocalidad({ ...nuevaLocalidad, localidad_id_zona: e.target.value })
             }
             className="border rounded px-3 py-2 w-full"
+            required
           >
             <option value="">Seleccionar zona</option>
             {zonas.map((z) => (
@@ -144,6 +146,7 @@ export default function Localidades() {
                 })
               }
               className="border w-full px-3 py-2 rounded"
+              required
             />
             <select
               value={localidadEditando.localidad_id_zona}
@@ -154,13 +157,15 @@ export default function Localidades() {
                 })
               }
               className="border rounded px-3 py-2 w-full"
+              required
             >
               <option value="">Seleccionar zona</option>
               {zonas.map((z) => (
                 <option key={z.id_zona} value={z.id_zona}>
                   {z.zona_nombre}
                 </option>
-              ))}
+              ))} 
+              
             </select>
             <div className="flex justify-end gap-2">
               <Button variant="gray" onClick={() => setLocalidadEditando(null)}>
