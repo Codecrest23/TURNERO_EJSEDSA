@@ -1,8 +1,9 @@
 import { useState } from "react"
 import Modal from "./Modal"
 import Button from "./Button"
+import { LayoutGrid, PencilLine, Trash, CirclePlus } from "lucide-react"
 
-export default function AddItem({ title = "Agregar", buttonLabel = "Agregar", children, onSubmit }) {
+export default function AddItem({ title = "Agregar", children, onSubmit }) {
   const [open, setOpen] = useState(false)
 
   const handleSubmit = async (e) => {
@@ -14,7 +15,10 @@ export default function AddItem({ title = "Agregar", buttonLabel = "Agregar", ch
   return (
     <>
       <Button variant="primary" onClick={() => setOpen(true)}>
-        {buttonLabel}
+               <span className="flex items-center gap-1">
+          <CirclePlus className="w-5 h-5 text-white-700" />
+          Agregar
+        </span>
       </Button>
 
       {open && (

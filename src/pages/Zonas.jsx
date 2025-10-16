@@ -10,16 +10,11 @@ import {LayoutGrid,CirclePlus, PencilLine, Trash,CheckCircle2,ShieldCheck} from 
 
 export default function Zonas() {
   const { zonas, loading, agregarZonas, modificarZona, eliminarZona } = useZonas()
-  const [nuevaZona, setNuevaZona] = useState({
-    zona_nombre: "",
-    zona_cantidad_localidades: null,
-    zona_cantidad_empleados: ""
-  })
-
+  const [nuevaZona, setNuevaZona] = useState({zona_nombre: "",zona_cantidad_localidades: null,zona_cantidad_empleados: ""})
   const [zonaEditando, setZonaEditando] = useState(null)
   const [zonaEliminar, setZonaEliminar] = useState(null)
   const [confirmarEdicion, setConfirmarEdicion] = useState(false)
-
+  const [ZonaSeleccionada, setZonaSeleccionada] = useState(null)
   if (loading) return <p>Cargando...</p>
 
   // 🔹 Agregar zona
@@ -48,27 +43,43 @@ export default function Zonas() {
 
       <Subtitle>Listado de zonas</Subtitle>
       {/* Tabla con UI */}
-      <Table headers={["N°", "Zona", "Localidades", "Empleados", "Acciones"]}>
+      <Table headers={["N°", "Zona", "Localidades", "Empleados"]}>
         {zonas.map((zon, index) => (
-          <tr key={zon.id_zona} className="border-b hover:bg-gray-50 transition">
+          <tr key={zon.id_zona}  onClick={() => setZonaSeleccionada(ZonaSeleccionada?.id_zona === zon.id_zona ? null : zon)}
+              className={`border-b hover:bg-gray-100 transition cursor-pointer ${
+                ZonaSeleccionada?.id_zona === zon.id_zona
+                  ? "bg-blue-100"
+                  : ""
+              }`}>
             <td className="px-6 py-3">{index + 1}</td>
             <td className="px-6 py-3">{zon.zona_nombre}</td>
             <td className="px-6 py-3">{zon.zona_cantidad_localidades}</td>
             <td className="px-6 py-3">{zon.zona_cantidad_empleados}</td>
-            <td className="px-6 py-3 flex gap-2">
-              <Button variant="warning" onClick={() => setZonaEditando({ ...zon })}>
-                Editar
-              </Button>
-              <Button variant="danger" onClick={() => setZonaEliminar(zon)}>
-                Eliminar
-              </Button>
-            </td>
           </tr>
         ))}
       </Table>
 
-      {/* Modal de agregar Zona */}
-      <div className="flex justify-end">
+      
+      <div className="flex justify-end gap-2 mt-4">
+        {/* Botones de Modificar agregar y eliminar */}
+         <Button
+                  variant="warning"
+                  onClick={() => setZonaEditando(ZonaSeleccionada)}
+                  disabled={!ZonaSeleccionada}
+                  className={!ZonaSeleccionada ? "opacity-50 cursor-not-allowed" : ""}
+                >
+                  Modificar
+                </Button>
+        
+                <Button
+                  variant="danger"
+                  onClick={() => setZonaEliminar(ZonaSeleccionada)}
+                  disabled={!ZonaSeleccionada}
+                  className={!ZonaSeleccionada ? "opacity-50 cursor-not-allowed" : ""}
+                >
+                  Eliminar
+          </Button>
+          {/* Modal de agregar Zona */}
         <AddItem title="Agregar Zona" onSubmit={handleSubmit}>
           <input
             type="text"

@@ -1,6 +1,6 @@
 import { Outlet, Link,useNavigate  } from "react-router-dom"
 import { useState } from "react"
-import { Menu, X, Home, Users, Calendar, Map, Layers, LogIn, Clock,LogOut } from "lucide-react"
+import { Menu, X, Home, Users, Calendar, Map, Layers, LogIn, Clock,LogOut, User, IdCardLanyard } from "lucide-react"
 import { supabase } from "./lib/supabaseClient"
 import { useAuth } from "./context/AuthContext"
 
@@ -37,10 +37,11 @@ export default function Layout() {
         <nav className="flex flex-col gap-2 p-2">
           <SidebarLink to="/calendario" icon={<Calendar size={20} />} open={open} label="Planificación" />
           {/* <SidebarLink to="/" icon={<Home size={20} />} open={open} label="Inicio" /> */}
-          {(rol === "Admin" || rol === "Supervisor") && (<SidebarLink to="/empleados" icon={<Users size={20} />} open={open} label="Empleados" />)}
           {(rol === "Admin" || rol === "Supervisor") && (<SidebarLink to="/turnos" icon={<Clock size={20} />} open={open} label="Turnos" />)}
+          {(rol === "Admin" || rol === "Supervisor") && (<SidebarLink to="/empleados" icon={<IdCardLanyard size={20} />} open={open} label="Empleados" />)}
           {rol === "Admin" && (<SidebarLink to="/localidades" icon={<Map size={20} />} open={open} label="Localidades" />)}
           {rol === "Admin" && (<SidebarLink to="/zonas" icon={<Layers size={20} />} open={open} label="Zonas" />)}
+          {rol === "Admin" && (<SidebarLink to="/usuarios" icon={<Users size={20} />} open={open} label="Usuarios" />)}
           {/* <SidebarLink to="/login" icon={<LogIn size={20} />} open={open} label="Login" /> */}
           <button
             onClick={handleLogout}

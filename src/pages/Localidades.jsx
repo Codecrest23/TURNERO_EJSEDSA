@@ -5,7 +5,7 @@ import Button from "../components/ui/Button"
 import ModalAddItem from "../components/ui/ModalAddItem"
 import Modal from "../components/ui/Modal"
 import { Title, Subtitle } from "../components/ui/Typography"
-import { LayoutGrid, PencilLine, Trash, CirclePlus } from "lucide-react"
+import {Map, CirclePlus } from "lucide-react"
 
 export default function Localidades() {
   const {
@@ -17,10 +17,7 @@ export default function Localidades() {
     eliminarLocalidad,
   } = useLocalidades()
 
-  const [nuevaLocalidad, setNuevaLocalidad] = useState({
-    localidad_nombre: "",
-    localidad_id_zona: "",
-  })
+  const [nuevaLocalidad, setNuevaLocalidad] = useState({localidad_nombre: "",localidad_id_zona: "",})
   const [localidadEditando, setLocalidadEditando] = useState(null)
   const [localidadEliminar, setLocalidadEliminar] = useState(null)
   const [localidadSeleccionada, setLocalidadSeleccionada] = useState(null)
@@ -48,7 +45,7 @@ export default function Localidades() {
     <div className="max-w-5xl mx-auto space-y-8">
       <Title>
         <div className="flex items-center gap-2">
-          <LayoutGrid className="w-6 h-6 text-gray-700" />
+          <Map className="w-6 h-6 text-gray-700" />
           Localidades
         </div>
       </Title>
@@ -74,7 +71,7 @@ export default function Localidades() {
       </Table>
 
 
-      {/* Modal agregar */}
+      {/* Modal agregar y botonoes */}
       <div className="flex justify-end gap-2 mt-4">
         <Button
           variant="warning"
@@ -132,7 +129,7 @@ export default function Localidades() {
         
       </div>
 
-      {/* ✏️ Modal editar */}
+      {/* Modal editar */}
       {localidadEditando && (
         <Modal title="Editar Localidad" onClose={() => setLocalidadEditando(null)}>
           <form onSubmit={handleEditarSubmit} className="space-y-4">
@@ -179,7 +176,7 @@ export default function Localidades() {
         </Modal>
       )}
 
-      {/* 🗑️ Modal eliminar */}
+      {/* Modal eliminar */}
       {localidadEliminar && (
         <Modal title="Eliminar Localidad" onClose={() => setLocalidadEliminar(null)}>
           <p className="mb-6 text-center">

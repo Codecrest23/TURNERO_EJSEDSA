@@ -5,6 +5,7 @@ import Login from "./pages/Login"
 import Localidades from "./pages/Localidades"
 import Zonas from "./pages/Zonas"
 import Calendario from "./pages/Calendario"
+import Usuarios from "./pages/Usuarios"
 import Layout from "./Layout"
 import ProtectedRoute from "./components/ProtectedRoute"
 
@@ -21,6 +22,7 @@ function App() {
           <Route path="/localidades" element={<ProtectedRoute allowedRoles={[ "Admin"]}><Localidades /></ProtectedRoute>} />
           <Route path="/zonas" element={<ProtectedRoute allowedRoles={["Admin"]}><Zonas /></ProtectedRoute>} />
           <Route path="/calendario" element={<ProtectedRoute><Calendario /></ProtectedRoute>} />
+          <Route path="/usuarios" element={<ProtectedRoute><Usuarios/></ProtectedRoute>} />
           {/* <Route path="/login" element={<Login />} /> */}
         </Route>
       </Routes>
