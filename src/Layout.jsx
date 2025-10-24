@@ -1,6 +1,6 @@
 import { Outlet, Link,useNavigate  } from "react-router-dom"
 import { useState } from "react"
-import { Menu, X, Home, Users, Calendar, Map, Layers, LogIn, Clock,LogOut, User, IdCardLanyard } from "lucide-react"
+import { Menu, X, Home, Users, Calendar, Map, Layers, LogIn, Clock,LogOut,BriefcaseBusiness, IdCardLanyard } from "lucide-react"
 import { supabase } from "./lib/supabaseClient"
 import { useAuth } from "./context/AuthContext"
 
@@ -8,7 +8,7 @@ export default function Layout() {
   const [open, setOpen] = useState(true)
   //agregado para logOut
   const navigate = useNavigate()
-  const { rol } = useAuth()  // 👈 traemos el rol
+  const { rol, user } = useAuth()  //  rol
   //console.log("rol",rol)
   const handleLogout = async () => {
     await supabase.auth.signOut()
@@ -19,7 +19,7 @@ export default function Layout() {
     <div className="flex h-screen">
       {/* Sidebar */}
       <div
-        className={`bg-gray-800 text-white transition-all duration-300 
+        className={`bg-gray-800 text-white transition-all duration-300 flex flex-col justify-between
         ${open ? "w-64" : "w-16"}`}
       >
         {/* Header del sidebar */}
@@ -39,6 +39,7 @@ export default function Layout() {
           {/* <SidebarLink to="/" icon={<Home size={20} />} open={open} label="Inicio" /> */}
           {(rol === "Admin" || rol === "Supervisor") && (<SidebarLink to="/turnos" icon={<Clock size={20} />} open={open} label="Turnos" />)}
           {(rol === "Admin" || rol === "Supervisor") && (<SidebarLink to="/empleados" icon={<IdCardLanyard size={20} />} open={open} label="Empleados" />)}
+          {(rol === "Admin" || rol === "Supervisor") && (<SidebarLink to="/funciones-sectores" icon={<BriefcaseBusiness size={20} />} open={open} label="Funciones y Sectores" />)}
           {rol === "Admin" && (<SidebarLink to="/localidades" icon={<Map size={20} />} open={open} label="Localidades" />)}
           {rol === "Admin" && (<SidebarLink to="/zonas" icon={<Layers size={20} />} open={open} label="Zonas" />)}
           {rol === "Admin" && (<SidebarLink to="/usuarios" icon={<Users size={20} />} open={open} label="Usuarios" />)}
@@ -51,12 +52,21 @@ export default function Layout() {
             {open && <span>Cerrar sesión</span>}
           </button>
         </nav>
-      </div>
+{/* Usuario logueado (nombre y mail) */}
+        {user && (
+        <div className="mt-auto p-4 border-t border-gray-700 text-xs text-gray-300">
+        <p className="font-semibold text-white">
+          {user.user_metadata?.full_name || "Usuario"}
+        </p>
+        <p className="truncate text-gray-400">{user.email}</p>
+        </div>)}
+        </div>
 
       {/* Contenido principal */}
       <main className="flex-1 bg-gray-100 p-8 overflow-y-auto">
         <Outlet />
       </main>
+
     </div>
   )
 }

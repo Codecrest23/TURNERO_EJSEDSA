@@ -117,28 +117,7 @@ export default function Usuarios() {
                  </form>
                </Modal>
              )}         
-      {/* Edición simple (perfil) */}
-      {/* {editing && (
-        <form onSubmit={handleUpdate} className="flex gap-2 items-end flex-wrap bg-white p-4 rounded shadow">
-          <input className="border p-2 rounded uppercase" placeholder="Nombre"
-            value={editing.perfil_nombre}
-            onChange={(e)=>setEditing({...editing, perfil_nombre: e.target.value.toUpperCase()})} />
-          <select className="border p-2 rounded"
-            value={editing.perfil_rol}
-            onChange={(e)=>setEditing({...editing, perfil_rol: e.target.value})}>
-            <option>Admin</option>
-            <option>Supervisor</option>
-            <option>Empleado</option>
-          </select>
-          {/* Si quisieras actualizar email/password del auth: */}
-          {/* {<input className="border p-2 rounded" placeholder="Nuevo email (opcional)"
-            value={editing.email || ""} onChange={(e)=>setEditing({...editing, email: e.target.value})} /> }
-          {<input className="border p-2 rounded" placeholder="Nueva password (opcional)" type="password"
-            value={editing.password || ""} onChange={(e)=>setEditing({...editing, password: e.target.value})} /> }
-          <button className="bg-green-600 text-white px-4 py-2 rounded">Guardar</button>
-          <button type="button" className="bg-gray-300 px-4 py-2 rounded" onClick={()=>setEditing(null)}>Cancelar</button>
-        </form>
-      )}} */}
+
     </div>
   )
 }

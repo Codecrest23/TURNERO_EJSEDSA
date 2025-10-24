@@ -6,8 +6,10 @@ import Localidades from "./pages/Localidades"
 import Zonas from "./pages/Zonas"
 import Calendario from "./pages/Calendario"
 import Usuarios from "./pages/Usuarios"
+import FuncionesSectores from "./pages/FuncionesSectores"
 import Layout from "./Layout"
 import ProtectedRoute from "./components/ProtectedRoute"
+
 
 function App() {
   return (
@@ -18,6 +20,7 @@ function App() {
         <Route element={<Layout />}>
           {/* <Route path="/" element={<ProtectedRoute><h1>Bienvenido al Turnero</h1></ProtectedRoute>} /> */}
           <Route path="/empleados" element={<ProtectedRoute allowedRoles={["Supervisor", "Admin"]}><Empleados /></ProtectedRoute>} />
+          <Route path="/funciones-sectores" element={<ProtectedRoute allowedRoles={["Supervisor", "Admin"]}><FuncionesSectores /></ProtectedRoute>} />
           <Route path="/turnos" element={<ProtectedRoute allowedRoles={["Supervisor", "Admin"]}><Turnos /></ProtectedRoute>} />
           <Route path="/localidades" element={<ProtectedRoute allowedRoles={[ "Admin"]}><Localidades /></ProtectedRoute>} />
           <Route path="/zonas" element={<ProtectedRoute allowedRoles={["Admin"]}><Zonas /></ProtectedRoute>} />
