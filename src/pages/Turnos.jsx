@@ -6,6 +6,7 @@ import ModalAddItem from "../components/ui/ModalAddItem"
 import Modal from "../components/ui/Modal"
 import { Title, Subtitle } from "../components/ui/Typography"
 import {Clock, CirclePlus } from "lucide-react"
+import { useLocalidades } from "../hooks/useLocalidades"
 
 export default function Turnos() {
   const {
@@ -26,6 +27,8 @@ export default function Turnos() {
   const [TurnoEditando, setTurnoEditando] = useState(null)
   const [TurnoEliminar, setTurnoEliminar] = useState(null)
   const [TurnoSeleccionado, setTurnoSeleccionado] = useState(null)
+  const { localidades } = useLocalidades()
+
 
   if (loading) return <p>Cargando...</p>
 
@@ -33,7 +36,7 @@ export default function Turnos() {
   const handleAgregar = async (e) => {
     e.preventDefault()
     await agregarTurno(nuevoTurno)
-    setNuevoTurno({ turno_nombre: "", turno_cantidad_dias: 0,turno_cantidad_dias_descanso: "",turno_tiene_guardia_pasiva: "",
+    setNuevoTurno({ turno_nombre: "", turno_cantidad_dias: 0,turno_cantidad_dias_descanso: "",turno_tiene_guardia_pasiva: 0,
         turno_es_laboral:"",turno_comentarios: "",turno_color: "" })
   }
 
@@ -53,7 +56,7 @@ export default function Turnos() {
   }
 
   return (
-    <div className="max-w-5xl mx-auto space-y-8">
+    <div className="max-w-7xl mx-auto space-y-8">
       <Title>
         <div className="flex items-center gap-2">
           <Clock className="w-6 h-6 text-gray-700" />
@@ -63,7 +66,7 @@ export default function Turnos() {
       <Subtitle>Listado de Turnos y Licencias</Subtitle>
 
       {/* 🧾 Tabla */}
-      <Table headers={[ "N°", "Turno", "Cantidad de días", "Días de descanso", "Tiene guardia Pasiva?", "Es Laboral?", "Notas", "Color"]}>
+      <Table headers={[ "N°", "Turno","Localidad", "Cantidad de días", "Días de descanso", "Guardia Pasiva?", "Es Laboral?", "Notas", "Color"]}>
           {turnos.map((tur, index) => (
             <tr
               key={tur.id_turno}
@@ -76,6 +79,7 @@ export default function Turnos() {
             >
               <td className="px-6 py-3">{index + 1}</td>
               <td className="px-6 py-3">{tur.turno_nombre}</td>
+              <td className="px-6 py-3">{tur.localidades?.localidad_nombre|| "Sin Localidad" }</td>
               <td className="px-6 py-3">{tur.turno_cantidad_dias }</td>
               <td className="px-6 py-3">{tur.turno_cantidad_dias_descanso }</td>
               <td className="px-6 py-3">{tur.turno_tiene_guardia_pasiva }</td>
@@ -93,16 +97,16 @@ export default function Turnos() {
 
       {/* Modal agregar y botonoes */}
       <div className="flex justify-end gap-2 mt-4">
-        {/* <Button
+        <Button
           variant="warning"
-          onClick={() => setNuevoTurno({...localidadSeleccionada, localidad_id_zona: localidadSeleccionada?.zonas?.id_zona || "",})}
-          disabled={!localidadSeleccionada}
-          className={!localidadSeleccionada ? "opacity-50 cursor-not-allowed" : ""}
+          onClick={() => setTurnoEditando({...TurnoSeleccionado, turno_id_localidad: TurnoSeleccionado?.localidades?.id_turno || "",})}
+          disabled={!TurnoSeleccionado}
+          className={!TurnoSeleccionado ? "opacity-50 cursor-not-allowed" : ""}
         >
           Modificar
         </Button>
 
-        <Button
+        {/*<Button
           variant="danger"
           onClick={() => setLocalidadEliminar(localidadSeleccionada)}
           disabled={!localidadSeleccionada}
@@ -120,72 +124,192 @@ export default function Turnos() {
           }
           onSubmit={handleAgregar}
         >
-          {/* <input
+          <input
             type="text"
-            placeholder="Nombre de Localidad"
-            value={nuevaLocalidad.localidad_nombre}
+            placeholder="Nombre del Turno"
+            value={nuevoTurno.turno_nombre}
             onChange={(e) =>
-              setNuevaLocalidad({ ...nuevaLocalidad, localidad_nombre: e.target.value })
+              setNuevoTurno({ ...nuevoTurno, turno_nombre: e.target.value })
             }
             className="border rounded px-3 py-2 w-full"
             required
           />
           <select
-            value={nuevaLocalidad.localidad_id_zona}
+            value={nuevoTurno.turno_id_localidad}
             onChange={(e) =>
-              setNuevaLocalidad({ ...nuevaLocalidad, localidad_id_zona: e.target.value })
+              setNuevoTurno({ ...nuevoTurno, turno_id_localidad: e.target.value })
             }
             className="border rounded px-3 py-2 w-full"
             required
           >
-            <option value="">Seleccionar zona</option>
-            {zonas.map((z) => (
-              <option key={z.id_zona} value={z.id_zona}>
-                {z.zona_nombre}
+            <option value="" >Seleccionar Localidad</option>
+            {localidades.map((loc) => (
+              <option key={loc.id_localidad} value={loc.id_localidad}>
+                {loc.localidad_nombre}
               </option>
             ))}
-          </select> */}
+          </select>
+          <input
+            type="number"
+            placeholder="Cantidad de Días"
+            value={nuevoTurno.turno_cantidad_dias}
+            onChange={(e) =>
+              setNuevoTurno({ ...nuevoTurno, turno_cantidad_dias: e.target.value })
+            }
+            className="border rounded px-3 py-2 w-full"
+            required
+          />
+          <input
+            type="number"
+            placeholder="Días de descanso"
+            value={nuevoTurno.turno_cantidad_dias_descanso}
+            onChange={(e) =>
+              setNuevoTurno({ ...nuevoTurno, turno_cantidad_dias_descanso: e.target.value })
+            }
+            className="border rounded px-3 py-2 w-full"
+            required
+          />
+{/*TOGLE de guardia pasiva si o no*/ }
+<div className="flex items-center justify-between px-1 py-2">
+  <span className="text-gray-700 font-medium">¿Tiene guardia pasiva?</span>
+
+  <div className="flex items-center gap-3">
+    <span
+      className={`text-sm font-medium transition-colors ${
+        nuevoTurno.turno_tiene_guardia_pasiva === 1
+          ? "text-gray-400"
+          : "text-gray-800"
+      }`}
+    >
+      No
+    </span>
+
+    <label className="relative inline-flex items-center cursor-pointer">
+      <input
+        type="checkbox"
+        checked={nuevoTurno.turno_tiene_guardia_pasiva === 1}
+        onChange={(e) =>
+          setNuevoTurno({
+            ...nuevoTurno,
+            turno_tiene_guardia_pasiva: e.target.checked ? 1 : 0,
+          })
+        }
+        className="sr-only peer"
+      />
+      <div className="w-11 h-6 bg-gray-300 rounded-full peer peer-checked:bg-blue-600 peer-focus:ring-2 peer-focus:ring-blue-300 after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:after:translate-x-full"></div>
+    </label>
+
+    <span
+      className={`text-sm font-medium transition-colors ${
+        nuevoTurno.turno_tiene_guardia_pasiva === 1
+          ? "text-blue-600"
+          : "text-gray-400"
+      }`}
+    >
+      Sí
+    </span>
+  </div>
+</div>
+
+{/*FIN de TOGLE de guardia pasiva si o no*/ }
+          <select 
+            value={nuevoTurno.turno_es_laboral}
+            onChange={(e) =>
+              setNuevoTurno({ ...nuevoTurno, turno_es_laboral: e.target.value })
+            }
+            className="border rounded px-3 py-2 w-full"
+            required
+          >
+            <option value="" disabled hidden>
+             Es laboral?
+            </option>
+            <option>Si</option>
+            <option>No</option>
+            
+          </select>
+
+{/* 📝 Comentarios */}
+<div className="flex flex-col gap-1">
+  <label htmlFor="comentarios" className="text-gray-700 font-medium">
+    Comentarios
+  </label>
+  <textarea
+    id="comentarios"
+    placeholder="Notas o detalles sobre el turno..."
+    value={nuevoTurno.turno_comentarios}
+    onChange={(e) =>
+      setNuevoTurno({
+        ...nuevoTurno,
+        turno_comentarios: e.target.value,
+      })
+    }
+    className="border rounded px-3 py-2 w-full min-h-[80px] resize-y focus:ring-2 focus:ring-blue-500 focus:outline-none"
+  ></textarea>
+</div>
+
+{/* 🎨 Selector de color */}
+<div className="flex flex-col gap-1 mt-3 ">
+  <label htmlFor="color" className="text-gray-700 font-medium">
+    Color del turno
+  </label>
+  <div className="flex items-center gap-3">
+    <input
+      id="color"
+      type="color"
+      value={nuevoTurno.turno_color || "#000000"}
+      onChange={(e) =>
+        setNuevoTurno({
+          ...nuevoTurno,
+          turno_color: e.target.value,
+        })
+      }
+      className="w-10 h-10 border border-gray-300 rounded-md cursor-pointer shadow-sm transition-transform hover:scale-105"
+    />
+    <span className="text-gray-600 font-mono">{nuevoTurno.turno_color}</span>
+  </div>
+</div>
+
         </ModalAddItem>
         
       </div>
 
       {/* Modal editar */}
-      {/* {localidadEditando && (
-        <Modal title="Editar Localidad" onClose={() => setLocalidadEditando(null)}>
+      {TurnoEditando && (
+        <Modal title="Editar Turno" onClose={() => setTurnoEditando(null)}>
           <form onSubmit={handleEditarSubmit} className="space-y-4">
             <input
               type="text"
-              value={localidadEditando.localidad_nombre}
+              value={TurnoEditando.turno_nombre}
               onChange={(e) =>
-                setLocalidadEditando({
-                  ...localidadEditando,
-                  localidad_nombre: e.target.value,
+                setTurnoEditando({
+                  ...TurnoEditando,
+                  turno_nombre: e.target.value,
                 })
               }
               className="border w-full px-3 py-2 rounded"
               required
             />
             <select
-              value={localidadEditando.localidad_id_zona}
+              value={TurnoEditando.turno_id_localidad}
               onChange={(e) =>
-                setLocalidadEditando({
-                  ...localidadEditando,
-                  localidad_id_zona: e.target.value,
+                setTurnoEditando({
+                  ...TurnoEditando,
+                  turno_id_localidad: e.target.value,
                 })
               }
               className="border rounded px-3 py-2 w-full"
               required
             >
-              <option value="">Seleccionar zona</option>
-              {zonas.map((z) => (
-                <option key={z.id_zona} value={z.id_zona}>
-                  {z.zona_nombre}
+              <option value="">Seleccionar Localidad</option>
+              {localidades.map((z) => (
+                <option key={z.id_localidad} value={z.id_localidad}>
+                  {z.localidad_nombre}
                 </option>
               ))} 
               
             </select>
             <div className="flex justify-end gap-2">
-              <Button variant="gray" onClick={() => setLocalidadEditando(null)}>
+              <Button variant="gray" onClick={() => setTurnoEditando(null)}>
                 Cancelar
               </Button>
               <Button type="submit" variant="warning">
@@ -194,7 +318,7 @@ export default function Turnos() {
             </div>
           </form>
         </Modal>
-      )} */}
+      )}
 
       {/* Modal eliminar */}
       {/* {localidadEliminar && (

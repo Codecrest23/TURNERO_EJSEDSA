@@ -34,7 +34,8 @@ export function useTurnos() {
           turno_horario_tipo,
           turno_horario_entrada,
           turno_horario_salida
-        )
+        ),
+        localidades (id_localidad,localidad_nombre)
       `)
       .order("id_turno", { ascending: true })
 

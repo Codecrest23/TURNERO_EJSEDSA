@@ -42,7 +42,7 @@ export default function Localidades() {
   }
 
   return (
-    <div className="max-w-5xl mx-auto space-y-8">
+    <div className="max-w-6xl mx-auto space-y-8">
       <Title>
         <div className="flex items-center gap-2">
           <Map className="w-6 h-6 text-gray-700" />
@@ -118,7 +118,7 @@ export default function Localidades() {
             className="border rounded px-3 py-2 w-full"
             required
           >
-            <option value="">Seleccionar zona</option>
+            <option value=""  disabled hidden>Seleccionar zona</option>
             {zonas.map((z) => (
               <option key={z.id_zona} value={z.id_zona}>
                 {z.zona_nombre}

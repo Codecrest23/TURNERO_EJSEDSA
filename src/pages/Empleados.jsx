@@ -30,8 +30,8 @@ export default function Empleados() {
     empleado_nombre_apellido: "",
     empleado_id_funcion: "",
     empleado_id_sector: "",
-    empleado_id_localidad: null,
-    empleado_id_turno: null,
+    empleado_id_localidad: "",
+    empleado_id_turno: "",
     empleado_color: "",
   })
 
@@ -172,7 +172,7 @@ export default function Empleados() {
             className="border rounded px-3 py-2 w-full"
             required
           >
-            <option value="">Seleccionar función</option>
+            <option value=""  >Seleccionar función</option>
             {funciones.map((f) => (
               <option key={f.funcion_empleado_id} value={f.funcion_empleado_id}>
                 {f.funcion_empleado_nombre}
@@ -191,7 +191,7 @@ export default function Empleados() {
             className="border rounded px-3 py-2 w-full"
             required
           >
-            <option value="">Seleccionar sector</option>
+            <option value="" >Seleccionar sector</option>
             {sectores.map((s) => (
               <option key={s.id_sector_empleado} value={s.id_sector_empleado}>
                 {s.sector_empleado_nombre}
@@ -209,7 +209,7 @@ export default function Empleados() {
             }
             className="border rounded px-3 py-2 w-full"
           >
-            <option value="">Seleccionar turno</option>
+            <option value="" >Seleccionar turno</option>
             {turnos.map((t) => (
               <option key={t.id_turno} value={t.id_turno}>
                 {t.turno_nombre}
@@ -220,18 +220,15 @@ export default function Empleados() {
           <select
             value={nuevoEmpleado.empleado_id_localidad}
             onChange={(e) =>
-              setNuevoEmpleado({
-                ...nuevoEmpleado,
-                empleado_id_localidad: e.target.value,
-              })
+              setNuevoEmpleado({...nuevoEmpleado, empleado_id_localidad: e.target.value})
             }
             className="border rounded px-3 py-2 w-full"
           >
-            <option value="">Seleccionar localidad</option>
+          <option value="" >Seleccionar localidad</option>
             {localidades.map((loc) => (
-              <option key={loc.id_localidad} value={loc.id_localidad}>
+          <option key={loc.id_localidad} value={loc.id_localidad}>
                 {loc.localidad_nombre}
-              </option>
+          </option>
             ))}
           </select>
         </ModalAddItem>

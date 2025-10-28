@@ -33,7 +33,7 @@ export default function Zonas() {
 
 
   return (
-    <div className="max-w-5xl mx-auto space-y-8">
+    <div className="max-w-6xl mx-auto space-y-8">
       <Title>
       <div className="flex items-center gap-2">
         <LayoutGrid className="w-6 h-6 text-gray-700" />
