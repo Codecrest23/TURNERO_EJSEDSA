@@ -7,6 +7,7 @@ import Modal from "../components/ui/Modal"
 import { Title, Subtitle } from "../components/ui/Typography"
 import {Clock, CirclePlus } from "lucide-react"
 import { useLocalidades } from "../hooks/useLocalidades"
+import TurnoForm from "../components/ui/TurnoForm"
 
 export default function Turnos() {
   const {
@@ -22,8 +23,8 @@ export default function Turnos() {
     eliminarHorario,
   } = useTurnos()
 
-  const [nuevoTurno, setNuevoTurno] = useState({turno_nombre: "", turno_cantidad_dias: "",turno_cantidad_dias_descanso: "",turno_tiene_guardia_pasiva: "",
-        turno_es_laboral:"",turno_comentarios: "",turno_color: ""})
+  const [nuevoTurno, setNuevoTurno] = useState({turno_nombre: "", turno_cantidad_dias: null,turno_cantidad_dias_descanso: null,turno_tiene_guardia_pasiva: 0,
+        turno_es_laboral:"",turno_comentarios: "",turno_color: "#000000"})
   const [TurnoEditando, setTurnoEditando] = useState(null)
   const [TurnoEliminar, setTurnoEliminar] = useState(null)
   const [TurnoSeleccionado, setTurnoSeleccionado] = useState(null)
@@ -116,55 +117,55 @@ export default function Turnos() {
                   Modificar
                 </Button>
 
-        {/*<Button
+        <Button
           variant="danger"
-          onClick={() => setLocalidadEliminar(localidadSeleccionada)}
-          disabled={!localidadSeleccionada}
-          className={!localidadSeleccionada ? "opacity-50 cursor-not-allowed" : ""}
+          onClick={() => setTurnoEliminar(TurnoSeleccionado)}
+          disabled={!TurnoSeleccionado}
+          className={!TurnoSeleccionado ? "opacity-50 cursor-not-allowed" : ""}
         >
           Eliminar
-        </Button> */}
+        </Button>
 
-<ModalAddItem title="Agregar Turno" buttonLabel="Agregar" onSubmit={onSubmit}>
+<ModalAddItem title="Agregar Turno" buttonLabel="Agregar" onSubmit={handleAgregar}>
       <TurnoForm turno={nuevoTurno} setTurno={setNuevoTurno} localidades={localidades} />
     </ModalAddItem>
         
       </div>
 
       {/* Modal editar */}
-      <Modal title="Editar Turno" onClose={onClose}>
-      <form onSubmit={onSubmit} className="space-y-4 max-h-[80vh] overflow-y-auto pr-2">
-        <TurnoForm turno={turno} setTurno={setTurno} localidades={localidades} />
+      {TurnoEditando && (<Modal title="Editar Turno" onClose={() => setTurnoEditando(null)}>
+      <form onSubmit={handleEditarSubmit} className="space-y-4 max-h-[80vh] overflow-y-auto pr-2">
+        <TurnoForm turno={TurnoEditando} setTurno={setTurnoEditando} localidades={localidades} />
         <div className="flex justify-end gap-2 pt-2 sticky bottom-0 bg-white border-t">
-          <Button variant="gray" onClick={onClose}>Cancelar</Button>
+          <Button variant="gray"onClick={() => setTurnoEditando(null)}>Cancelar</Button>
           <Button type="submit" variant="warning">Guardar</Button>
         </div>
       </form>
     </Modal>
-
+    )}
       {/* Modal eliminar */}
-      {/* {localidadEliminar && (
-        <Modal title="Eliminar Localidad" onClose={() => setLocalidadEliminar(null)}>
+      {TurnoEliminar && (
+        <Modal title="Eliminar Turno" onClose={() => setTurnoEliminar(null)}>
           <p className="mb-6 text-center">
-            ¿Seguro que deseas eliminar la localidad{" "}
-            <b>"{localidadEliminar.localidad_nombre}"</b>?
+            ¿Seguro que deseas eliminar el Turno{" "}
+            <b>"{TurnoEliminar.turno_nombre}"</b>?
           </p>
           <div className="flex justify-center gap-2">
-            <Button variant="gray" onClick={() => setLocalidadEliminar(null)}>
+            <Button variant="gray" onClick={() => setTurnoEliminar(null)}>
               Cancelar
             </Button>
             <Button
               variant="danger"
               onClick={() => {
-                eliminarLocalidad(localidadEliminar.id_localidad)
-                setLocalidadEliminar(null)
+                eliminarTurno(TurnoEliminar.id_turno)
+                setTurnoEliminar(null)
               }}
             >
               Sí, eliminar
             </Button>
           </div>
         </Modal>
-      )} */}
+      )}
     </div>
   )
 }

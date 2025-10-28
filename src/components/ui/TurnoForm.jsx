@@ -18,7 +18,7 @@ export default function TurnoForm({ turno, setTurno, localidades }) {
         }
         onChange={(e) => setTurno({ ...turno, turno_id_localidad: e.target.value })}
         className="border rounded px-3 py-2 w-full"
-        required
+        
       >
         <option value="">Seleccionar Localidad</option>
         {localidades.map((loc) => (
@@ -74,6 +74,7 @@ export default function TurnoForm({ turno, setTurno, localidades }) {
         value={turno.turno_es_laboral || ""}
         onChange={(e) => setTurno({ ...turno, turno_es_laboral: e.target.value })}
         className="border rounded px-3 py-2 w-full"
+        required
       >
         <option value="">Es laboral?</option>
         <option>Si</option>
