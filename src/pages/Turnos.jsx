@@ -5,9 +5,10 @@ import Button from "../components/ui/Button"
 import ModalAddItem from "../components/ui/ModalAddItem"
 import Modal from "../components/ui/Modal"
 import { Title, Subtitle } from "../components/ui/Typography"
-import {Clock, CirclePlus } from "lucide-react"
+import {Clock, CirclePlus,Eye } from "lucide-react"
 import { useLocalidades } from "../hooks/useLocalidades"
 import TurnoForm from "../components/ui/TurnoForm"
+import ButtonSmall from "../components/ui/ButtonSmall";
 
 export default function Turnos() {
   const {
@@ -29,6 +30,7 @@ export default function Turnos() {
   const [TurnoEliminar, setTurnoEliminar] = useState(null)
   const [TurnoSeleccionado, setTurnoSeleccionado] = useState(null)
   const { localidades } = useLocalidades()
+  const [TurnoDetalle, setTurnoDetalle] = useState(null);
 
 
   if (loading) return <p>Cargando...</p>
@@ -67,7 +69,8 @@ export default function Turnos() {
       <Subtitle>Listado de Turnos y Licencias</Subtitle>
 
       {/* 🧾 Tabla */}
-      <Table headers={[ "N°", "Turno","Localidad", "Cantidad de días", "Días de descanso", "Guardia Pasiva?", "Es Laboral?", "Notas", "Color"]}>
+      <Table headers={[ "N°", "Turno","Localidad", "Cantidad de días", "Días de descanso", "Guardia Pasiva?", "Es Laboral?", 
+                        "Notas", "Color","Detalles"]}>
           {turnos.map((tur, index) => (
             <tr
               key={tur.id_turno}
@@ -79,18 +82,31 @@ export default function Turnos() {
               }`}
             >
               <td className="px-6 py-3">{index + 1}</td>
-              <td className="px-6 py-3">{tur.turno_nombre}</td>
+              <td className="px-6 py-3"><div className="max-w-[250px] overflow-hidden text-ellipsis line-clamp-3">
+                {tur.turno_nombre}</div></td>
               <td className="px-6 py-3">{tur.localidades?.localidad_nombre|| "Sin Localidad" }</td>
               <td className="px-6 py-3">{tur.turno_cantidad_dias }</td>
               <td className="px-6 py-3">{tur.turno_cantidad_dias_descanso }</td>
               <td className="px-6 py-3">{tur.turno_tiene_guardia_pasiva === 1 ? "Sí" : "No"}</td>
               <td className="px-6 py-3">{tur.turno_es_laboral }</td>
-              <td className="px-6 py-3">{tur.turno_comentarios }</td>
-              <td className="px-6 py-3"><div
+              <td className="px-6 py-3"><div className="max-w-[250px] overflow-hidden text-ellipsis line-clamp-3">
+                {tur.turno_comentarios}</div></td><td className="px-6 py-3"><div
                   className="w-5 h-5 rounded-full border border-gray-300 mx-auto"
                   style={{ backgroundColor: tur.turno_color }}
                   title={tur.turno_color} // tooltip al pasar el mouse
                 ></div></td>
+              <td className="px-6 py-3 text-center">
+<ButtonSmall
+  variant="primary"
+  onClick={(e) => {
+    e.stopPropagation();
+    setTurnoDetalle(tur);
+  }}
+>
+  Ver detalle
+</ButtonSmall>
+
+            </td>
             </tr>
           ))}
       </Table>
@@ -166,6 +182,63 @@ export default function Turnos() {
           </div>
         </Modal>
       )}
+
+{/* 🔍 Modal Detalle */}
+      {TurnoDetalle && (
+        <Modal
+          title={`Detalle del turno: ${TurnoDetalle.turno_nombre}`}
+          onClose={() => setTurnoDetalle(null)}
+        >
+          <div className="space-y-3">
+            <p>
+              <b>Localidad:</b>{" "}
+              {TurnoDetalle.localidades?.localidad_nombre || "Sin Localidad"}
+            </p>
+
+            <p>
+              <b>Cantidad de días:</b> {TurnoDetalle.turno_cantidad_dias}
+            </p>
+
+            <p>
+              <b>Días de descanso:</b> {TurnoDetalle.turno_cantidad_dias_descanso}
+            </p>
+
+            <p>
+              <b>Guardia pasiva:</b>{" "}
+              {TurnoDetalle.turno_tiene_guardia_pasiva === 1 ? "Sí" : "No"}
+            </p>
+
+            <p>
+              <b>Es laboral:</b> {TurnoDetalle.turno_es_laboral}
+            </p>
+
+            <p>
+              <b>Color del turno:</b>
+            </p>
+            <div
+              className="w-10 h-10 rounded border border-gray-300"
+              style={{ backgroundColor: TurnoDetalle.turno_color }}
+            ></div>
+
+            <p>
+              <b>Notas / Comentarios:</b>
+            </p>
+            <p className="border rounded bg-gray-50 p-3 whitespace-pre-wrap">
+              {TurnoDetalle.turno_comentarios || "Sin comentarios"}
+            </p>
+
+            <div className="flex justify-end">
+              <Button variant="gray" onClick={() => setTurnoDetalle(null)}>
+                Cerrar
+              </Button>
+            </div>
+          </div>
+        </Modal>
+      )}
+
+
+
+
     </div>
   )
 }
