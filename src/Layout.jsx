@@ -63,7 +63,7 @@ export default function Layout() {
         </div>
 
       {/* Contenido principal */}
-      <main className="flex-1 bg-gray-100 p-8 overflow-y-auto">
+      <main className="flex-1 bg-gray-100 p-8 overflow-y-auto min-h-full">
         <Outlet />
       </main>
 

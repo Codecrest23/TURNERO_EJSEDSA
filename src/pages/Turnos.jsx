@@ -9,6 +9,7 @@ import {Clock, CirclePlus,Eye } from "lucide-react"
 import { useLocalidades } from "../hooks/useLocalidades"
 import TurnoForm from "../components/ui/TurnoForm"
 import ButtonSmall from "../components/ui/ButtonSmall";
+import ModalDetalleTurno from "../components/ui/ModalDetalleTurno"
 
 export default function Turnos() {
   const {
@@ -25,7 +26,7 @@ export default function Turnos() {
   } = useTurnos()
 
   const [nuevoTurno, setNuevoTurno] = useState({turno_nombre: "", turno_cantidad_dias: null,turno_cantidad_dias_descanso: null,turno_tiene_guardia_pasiva: 0,
-        turno_es_laboral:"",turno_comentarios: "",turno_color: "#000000"})
+        turno_es_laboral:"",turno_comentarios: "",turno_color: "#000000", turno_id_localidad:null})
   const [TurnoEditando, setTurnoEditando] = useState(null)
   const [TurnoEliminar, setTurnoEliminar] = useState(null)
   const [TurnoSeleccionado, setTurnoSeleccionado] = useState(null)
@@ -36,12 +37,70 @@ export default function Turnos() {
   if (loading) return <p>Cargando...</p>
 
   //  Agregar
+  // const handleAgregar = async (e) => {
+  //   e.preventDefault()
+  //   await agregarTurno(nuevoTurno)
+  //   setNuevoTurno({ turno_nombre: "", turno_cantidad_dias: 0,turno_cantidad_dias_descanso:0,turno_tiene_guardia_pasiva: 0,
+  //       turno_es_laboral:"",turno_comentarios: "",turno_color: "" })
+  // }
   const handleAgregar = async (e) => {
-    e.preventDefault()
-    await agregarTurno(nuevoTurno)
-    setNuevoTurno({ turno_nombre: "", turno_cantidad_dias: 0,turno_cantidad_dias_descanso: "",turno_tiene_guardia_pasiva: 0,
-        turno_es_laboral:"",turno_comentarios: "",turno_color: "" })
-  }
+  e.preventDefault();
+
+  // 🔹 Copiamos el turno completo, pero quitamos el campo "tieneHorarios"
+  const turnoParaGuardar = { ...nuevoTurno };
+  delete turnoParaGuardar.tieneHorarios; // <--- esta línea evita el error
+
+  // 🔹 Guardamos el turno
+  await agregarTurno(turnoParaGuardar);
+
+  // 🔹 Reseteamos el formulario
+  setNuevoTurno({
+    turno_nombre: "",
+    turno_cantidad_dias: null,
+    turno_cantidad_dias_descanso: null,
+    turno_tiene_guardia_pasiva: 0,
+    turno_es_laboral: "",
+    turno_comentarios: "",
+    turno_color: "#FFFFFF",
+    turno_id_localidad:null,
+  });
+};
+
+// const handleAgregar = async (e) => {
+//   e.preventDefault();
+
+//   // 🔹 Sacamos los campos que NO existen en la tabla "turnos"
+//   const {
+//     tieneHorarios,
+//     turno_horario_tipo,
+//     turno_horario_entrada,
+//     turno_horario_salida,
+//     ...turnoSinHorarios
+//   } = nuevoTurno;
+
+//   // 🔹 Insertamos el turno principal
+//   const { data, error } = await agregarTurno(turnoSinHorarios);
+
+//   // 🔹 Si tiene horarios, los guardamos en turnos_horarios
+//   if (tieneHorarios && turno_horario_tipo && turno_horario_entrada && turno_horario_salida) {
+//     await agregarHorario(data?.id_turno, {
+//       turno_horario_tipo,
+//       turno_horario_entrada,
+//       turno_horario_salida,
+//     });
+//   }
+
+//   // 🔹 Reset form
+//   setNuevoTurno({
+//     turno_nombre: "",
+//     turno_cantidad_dias: 0,
+//     turno_cantidad_dias_descanso: "",
+//     turno_tiene_guardia_pasiva: 0,
+//     turno_es_laboral: "",
+//     turno_comentarios: "",
+//     turno_color: "",
+//   });
+// };
 
   //  Editar
   const handleEditarSubmit = async (e) => {
@@ -54,6 +113,7 @@ export default function Turnos() {
       turno_es_laboral: TurnoEditando.turno_es_laboral,
       turno_comentarios: TurnoEditando.turno_comentarios,
       turno_color: TurnoEditando.turno_color,
+      turno_id_localidad: TurnoEditando.turno_id_localidad === "" || TurnoEditando.turno_id_localidad === null || isNaN(TurnoEditando.turno_id_localidad) ? null: Number(TurnoEditando.turno_id_localidad),
     })
     setTurnoEditando(null)
   }
@@ -124,7 +184,7 @@ export default function Turnos() {
                         // empleado_id_funcion: empleadoSeleccionado.empleado_id_funcion ?? "",
                         // empleado_id_sector: empleadoSeleccionado.empleado_id_sector ?? "",
                         // empleado_id_turno: empleadoSeleccionado.empleado_id_turno ?? "",
-                        turno_id_localidad: TurnoSeleccionado.turno_id_localidad ?? TurnoSeleccionado.localidades?.id_localidad ?? "",
+                        turno_id_localidad: TurnoSeleccionado.turno_id_localidad ?? TurnoSeleccionado.localidades?.id_localidad ?? null,
                       })
                     }}
                     disabled={!TurnoSeleccionado}
@@ -185,57 +245,11 @@ export default function Turnos() {
 
 {/* 🔍 Modal Detalle */}
       {TurnoDetalle && (
-        <Modal
-          title={`Detalle del turno: ${TurnoDetalle.turno_nombre}`}
-          onClose={() => setTurnoDetalle(null)}
-        >
-          <div className="space-y-3">
-            <p>
-              <b>Localidad:</b>{" "}
-              {TurnoDetalle.localidades?.localidad_nombre || "Sin Localidad"}
-            </p>
-
-            <p>
-              <b>Cantidad de días:</b> {TurnoDetalle.turno_cantidad_dias}
-            </p>
-
-            <p>
-              <b>Días de descanso:</b> {TurnoDetalle.turno_cantidad_dias_descanso}
-            </p>
-
-            <p>
-              <b>Guardia pasiva:</b>{" "}
-              {TurnoDetalle.turno_tiene_guardia_pasiva === 1 ? "Sí" : "No"}
-            </p>
-
-            <p>
-              <b>Es laboral:</b> {TurnoDetalle.turno_es_laboral}
-            </p>
-
-            <p>
-              <b>Color del turno:</b>
-            </p>
-            <div
-              className="w-10 h-10 rounded border border-gray-300"
-              style={{ backgroundColor: TurnoDetalle.turno_color }}
-            ></div>
-
-            <p>
-              <b>Notas / Comentarios:</b>
-            </p>
-            <p className="border rounded bg-gray-50 p-3 whitespace-pre-wrap">
-              {TurnoDetalle.turno_comentarios || "Sin comentarios"}
-            </p>
-
-            <div className="flex justify-end">
-              <Button variant="gray" onClick={() => setTurnoDetalle(null)}>
-                Cerrar
-              </Button>
-            </div>
-          </div>
-        </Modal>
-      )}
-
+  <ModalDetalleTurno
+    turno={TurnoDetalle}
+    onClose={() => setTurnoDetalle(null)}
+  />
+)}
 
 
 

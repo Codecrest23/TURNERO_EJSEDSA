@@ -1,3 +1,4 @@
+import Toggle from "../ui/Toggle";
 export default function TurnoForm({ turno, setTurno, localidades }) {
   return (
     <>
@@ -13,10 +14,10 @@ export default function TurnoForm({ turno, setTurno, localidades }) {
       <select
         value={
           turno.turno_id_localidad ??
-          turno.localidades?.id_localidad ??
-          ""
+          turno.localidades?.id_localidad ??  ""
+         // : turno.turno_id_localidad
         }
-        onChange={(e) => setTurno({ ...turno, turno_id_localidad: e.target.value })}
+        onChange={(e) => setTurno({ ...turno, turno_id_localidad: e.target.value === "" ? null : e.target.value})}
         className="border rounded px-3 py-2 w-full"
         
       >
@@ -33,7 +34,7 @@ export default function TurnoForm({ turno, setTurno, localidades }) {
         type="number"
         placeholder="Cantidad de Días"
         value={turno.turno_cantidad_dias || ""}
-        onChange={(e) => setTurno({ ...turno, turno_cantidad_dias: e.target.value })}
+        onChange={(e) => setTurno({ ...turno, turno_cantidad_dias: e.target.value=== "" ? null : e.target.value, })}
         className="border rounded px-3 py-2 w-full"
       />
 
@@ -42,7 +43,7 @@ export default function TurnoForm({ turno, setTurno, localidades }) {
         type="number"
         placeholder="Días de descanso"
         value={turno.turno_cantidad_dias_descanso || ""}
-        onChange={(e) => setTurno({ ...turno, turno_cantidad_dias_descanso: e.target.value })}
+        onChange={(e) => setTurno({ ...turno, turno_cantidad_dias_descanso: e.target.value=== "" ? null : e.target.value, })}
         className="border rounded px-3 py-2 w-full"
       />
 
@@ -96,12 +97,71 @@ export default function TurnoForm({ turno, setTurno, localidades }) {
           <input
             type="color"
             value={turno.turno_color || "#000000"}
-            onChange={(e) => setTurno({ ...turno, turno_color: e.target.value })}
+            onChange={(e) => setTurno({ ...turno, turno_color: e.target.value === "" ? "#FFFFFF" : e.target.value, })}
             className="w-10 h-10 border border-gray-300 cursor-pointer shadow-sm transition-transform hover:scale-105"
           />
           <span className="text-gray-600 font-mono">{turno.turno_color}</span>
         </div>
       </div>
+      {/* Checkbox para habilitar horarios */}
+<Toggle
+  label="¿Tiene horarios?"
+  checked={turno.tieneHorarios || false}
+  onChange={(checked) =>
+    setTurno({ ...turno, tieneHorarios: checked })
+  }
+/>
+
+{/* Campos adicionales si tiene horarios */}
+{turno.tieneHorarios && (
+  <div className="mt-4 space-y-4 border-t pt-4">
+    <h3 className="font-semibold text-gray-800">Horarios del turno</h3>
+
+    <div className="flex gap-2 items-center">
+      <label className="w-24 text-sm text-gray-700">Tipo:</label>
+      <select
+        value={turno.turno_horario_tipo || ""}
+        onChange={(e) =>
+          setTurno({ ...turno, turno_horario_tipo: e.target.value })
+        }
+        className="border border-gray-300 rounded p-2 text-sm w-32"
+        required
+      >
+        <option value="">Elegir</option>
+        <option value="Mañana">Mañana</option>
+        <option value="Tarde">Tarde</option>
+        <option value="Completo">Completo</option>
+      </select>
+    </div>
+
+    <div className="flex gap-2 items-center">
+      <label className="w-24 text-sm text-gray-700">Entrada:</label>
+      <input
+        type="time"
+        value={turno.turno_horario_entrada || ""}
+        onChange={(e) =>
+          setTurno({ ...turno, turno_horario_entrada: e.target.value })
+        }
+        className="border border-gray-300 rounded p-2 text-sm"
+        required={!!turno.tieneHorarios}
+      />
+    </div>
+
+    <div className="flex gap-2 items-center">
+      <label className="w-24 text-sm text-gray-700">Salida:</label>
+      <input
+        type="time"
+        value={turno.turno_horario_salida || ""}
+        onChange={(e) =>
+          setTurno({ ...turno, turno_horario_salida: e.target.value })
+        }
+        className="border border-gray-300 rounded p-2 text-sm"
+        required={!!turno.tieneHorarios}
+      />
+    </div>
+  </div>
+)}
+
     </>
   )
 }

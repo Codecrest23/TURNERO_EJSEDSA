@@ -64,7 +64,8 @@ export function useTurnos() {
         turno_tiene_guardia_pasiva,
         turno_es_laboral,
         turno_comentarios,
-        turno_color
+        turno_color,
+        turno_id_localidad
       `)
       .single()
 
