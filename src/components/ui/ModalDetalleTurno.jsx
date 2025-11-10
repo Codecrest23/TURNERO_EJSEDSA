@@ -13,6 +13,7 @@ export default function ModalDetalleTurno({ turno, onClose }) {
     turno_es_laboral,
     turno_color,
     turno_comentarios,
+     turnos_horarios, // viene del fetchTurnos en useTurnos
   } = turno
 
   return (
@@ -41,7 +42,34 @@ export default function ModalDetalleTurno({ turno, onClose }) {
             </div>
           </div>
         </div>
+        {/* ─────────────── Horarios ─────────────── */}
+        {turnos_horarios && turnos_horarios.length > 0 && (
+          <div className="mt-4">
+            <span className="text-[15px] font-semibold text-gray-700">Horarios</span>
+            <div className="mt-2 border rounded-lg overflow-hidden shadow-sm">
+              <table className="w-full text-left border-collapse">
+                <thead className="bg-gray-100 text-gray-700 text-sm">
+                  <tr>
+                    <th className="px-4 py-2 border-b">Tipo</th>
+                    <th className="px-4 py-2 border-b">Entrada</th>
+                    <th className="px-4 py-2 border-b">Salida</th>
+                  </tr>
+                </thead>
+                <tbody className="text-gray-800 text-sm">
+                  {turnos_horarios.map((h) => (
+                    <tr key={h.id_turno_horario} className="hover:bg-gray-50 transition">
+                      <td className="px-4 py-2 border-b">{h.turno_horario_tipo}</td>
+                      <td className="px-4 py-2 border-b">{h.turno_horario_entrada}</td>
+                      <td className="px-4 py-2 border-b">{h.turno_horario_salida}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
 
+        {/* ─────────────── Comentarios ─────────────── */}
         <div>
           <span className="text-[15px] font-semibold text-gray-700">
             Notas / Comentarios

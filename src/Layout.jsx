@@ -1,9 +1,17 @@
 import { Outlet, Link,useNavigate  } from "react-router-dom"
 import { useState } from "react"
-import { Menu, X, Home, Users, Calendar, Map, Layers, LogIn, Clock,LogOut,BriefcaseBusiness, IdCardLanyard } from "lucide-react"
+import { Menu, X, User, Users, Calendar, Map, Layers, LogIn,Clock9, Clock,LogOut,BriefcaseBusiness, IdCardLanyard,UserPlus} from "lucide-react"
 import { supabase } from "./lib/supabaseClient"
 import { useAuth } from "./context/AuthContext"
 
+export function IconAsignarTurno() {
+  return (
+  <div className="flex items-center justify-center relative">
+    <Clock9 className="w-6 h-6  text-white" />
+    <UserPlus className="w-[15px] h-[15px] absolute bottom-[1px] right-[-8px] text-white"  strokeWidth={3}/>
+  </div>
+  )
+}
 export default function Layout() {
   const [open, setOpen] = useState(true)
   //agregado para logOut
@@ -35,8 +43,9 @@ export default function Layout() {
 
         {/* Links */}
         <nav className="flex flex-col gap-2 p-2">
-          <SidebarLink to="/calendario" icon={<Calendar size={20} />} open={open} label="Planificación" />
+          <SidebarLink to="/planificacion" icon={<Calendar size={20} />} open={open} label="Planificación" />
           {/* <SidebarLink to="/" icon={<Home size={20} />} open={open} label="Inicio" /> */}
+          {(rol === "Admin" || rol === "Supervisor") && (<SidebarLink to="/asignacion" icon={<IconAsignarTurno size={20} />} open={open} label="Asignacion de Turnos" />)}
           {(rol === "Admin" || rol === "Supervisor") && (<SidebarLink to="/turnos" icon={<Clock size={20} />} open={open} label="Turnos" />)}
           {(rol === "Admin" || rol === "Supervisor") && (<SidebarLink to="/empleados" icon={<IdCardLanyard size={20} />} open={open} label="Empleados" />)}
           {(rol === "Admin" || rol === "Supervisor") && (<SidebarLink to="/funciones-sectores" icon={<BriefcaseBusiness size={20} />} open={open} label="Funciones y Sectores" />)}

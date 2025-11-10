@@ -4,11 +4,12 @@ import Turnos from "./pages/Turnos"
 import Login from "./pages/Login"
 import Localidades from "./pages/Localidades"
 import Zonas from "./pages/Zonas"
-import Calendario from "./pages/Calendario"
+import Planificacion from "./pages/Planificacion"
 import Usuarios from "./pages/Usuarios"
 import FuncionesSectores from "./pages/FuncionesSectores"
 import Layout from "./Layout"
 import ProtectedRoute from "./components/ProtectedRoute"
+import Asignacion from "./pages/AsignacionTurnos"
 
 
 function App() {
@@ -24,8 +25,9 @@ function App() {
           <Route path="/turnos" element={<ProtectedRoute allowedRoles={["Supervisor", "Admin"]}><Turnos /></ProtectedRoute>} />
           <Route path="/localidades" element={<ProtectedRoute allowedRoles={[ "Admin"]}><Localidades /></ProtectedRoute>} />
           <Route path="/zonas" element={<ProtectedRoute allowedRoles={["Admin"]}><Zonas /></ProtectedRoute>} />
-          <Route path="/calendario" element={<ProtectedRoute><Calendario /></ProtectedRoute>} />
+          <Route path="/planificacion" element={<ProtectedRoute><Planificacion /></ProtectedRoute>} />
           <Route path="/usuarios" element={<ProtectedRoute><Usuarios/></ProtectedRoute>} />
+          <Route path="/asignacion" element={<ProtectedRoute><Asignacion/></ProtectedRoute>} />
           {/* <Route path="/login" element={<Login />} /> */}
         </Route>
       </Routes>

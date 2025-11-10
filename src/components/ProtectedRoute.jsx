@@ -9,7 +9,7 @@ export default function ProtectedRoute({ children, allowedRoles }) {
 
   if (allowedRoles && (!rol || !allowedRoles.includes(rol))) {
     // siempre a una ruta pública para evitar loops
-    return <Navigate to="/calendario" replace />;
+    return <Navigate to="/planificacion" replace />;
   }
 
   return children;

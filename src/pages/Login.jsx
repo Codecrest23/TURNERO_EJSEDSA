@@ -34,11 +34,11 @@ export default function Login() {
     // (onAuthStateChange ya disparó y actualizará user/rol).
   };
 
-  // Cuando el contexto ya tiene user y no está cargando → ir a /calendario
+  // Cuando el contexto ya tiene user y no está cargando → ir a /planificacion
   useEffect(() => {
     if (user && !loading) {
-      //console.log("Navegando a /calendario"); // ← LOG #4
-      navigate("/calendario", { replace: true });
+      //console.log("Navegando a /planificacion"); // ← LOG #4
+      navigate("/planificacion", { replace: true });
     }
   }, [user, loading, navigate]);
 
