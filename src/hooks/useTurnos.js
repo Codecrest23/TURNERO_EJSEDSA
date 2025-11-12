@@ -89,7 +89,7 @@ export function useTurnos() {
     }
 
     // 3. Recargar lista
-    fetchTurnos()
+    //fetchTurnos()
   }
 
   // ────────────────────────────────
@@ -104,9 +104,7 @@ export function useTurnos() {
     if (error) {
       console.error("Error al modificar turno:", error.message)
       setError(error)
-    } else {
-      fetchTurnos()
-    }
+    } //else {      fetchTurnos()    }
   }
 
   // ────────────────────────────────
@@ -166,7 +164,7 @@ export function useTurnos() {
       .eq("id_turno_horario", id_turno_horario)
 
     if (error) console.error("Error al modificar horario:", error.message)
-    else fetchTurnos()
+    //else fetchTurnos()
   }
 
   // ────────────────────────────────

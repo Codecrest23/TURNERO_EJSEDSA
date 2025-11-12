@@ -117,49 +117,94 @@ export default function TurnoForm({ turno, setTurno, localidades }) {
   <div className="mt-4 space-y-4 border-t pt-4">
     <h3 className="font-semibold text-gray-800">Horarios del turno</h3>
 
-    <div className="flex gap-2 items-center">
-      <label className="w-24 text-sm text-gray-700">Tipo:</label>
-      <select
-        value={turno.turno_horario_tipo || ""}
-        onChange={(e) =>
-          setTurno({ ...turno, turno_horario_tipo: e.target.value })
-        }
-        className="border border-gray-300 rounded p-2 text-sm w-32"
-        required
+    {(turno.turnos_horarios || []).map((h, i) => (
+      <div
+        key={i}
+        className="flex flex-wrap items-center gap-3 border p-3 rounded-md bg-gray-50"
       >
-        <option value="">Elegir</option>
-        <option value="Mañana">Mañana</option>
-        <option value="Tarde">Tarde</option>
-        <option value="Completo">Completo</option>
-      </select>
-    </div>
+        <div className="flex flex-col">
+          <label className="text-sm text-gray-700">Tipo:</label>
+          <select
+            value={h.turno_horario_tipo || ""}
+            onChange={(e) => {
+              const nuevos = [...turno.turnos_horarios]
+              nuevos[i].turno_horario_tipo = e.target.value
+              setTurno({ ...turno, turnos_horarios: nuevos })
+            }}
+            className="border rounded p-2 text-sm"
+            required
+          >
+            <option value="">Elegir</option>
+            <option value="Mañana">Mañana</option>
+            <option value="Tarde">Tarde</option>
+            <option value="Completo">Completo</option>
+          </select>
+        </div>
 
-    <div className="flex gap-2 items-center">
-      <label className="w-24 text-sm text-gray-700">Entrada:</label>
-      <input
-        type="time"
-        value={turno.turno_horario_entrada || ""}
-        onChange={(e) =>
-          setTurno({ ...turno, turno_horario_entrada: e.target.value })
-        }
-        className="border border-gray-300 rounded p-2 text-sm"
-        required={!!turno.tieneHorarios}
-      />
-    </div>
+        <div className="flex flex-col">
+          <label className="text-sm text-gray-700">Entrada:</label>
+          <input
+            type="time"
+            value={h.turno_horario_entrada || ""}
+            onChange={(e) => {
+              const nuevos = [...turno.turnos_horarios]
+              nuevos[i].turno_horario_entrada = e.target.value
+              setTurno({ ...turno, turnos_horarios: nuevos })
+            }}
+            className="border rounded p-2 text-sm"
+            required
+          />
+        </div>
 
-    <div className="flex gap-2 items-center">
-      <label className="w-24 text-sm text-gray-700">Salida:</label>
-      <input
-        type="time"
-        value={turno.turno_horario_salida || ""}
-        onChange={(e) =>
-          setTurno({ ...turno, turno_horario_salida: e.target.value })
-        }
-        className="border border-gray-300 rounded p-2 text-sm"
-        required={!!turno.tieneHorarios}
-      />
-    </div>
+        <div className="flex flex-col">
+          <label className="text-sm text-gray-700">Salida:</label>
+          <input
+            type="time"
+            value={h.turno_horario_salida || ""}
+            onChange={(e) => {
+              const nuevos = [...turno.turnos_horarios]
+              nuevos[i].turno_horario_salida = e.target.value
+              setTurno({ ...turno, turnos_horarios: nuevos })
+            }}
+            className="border rounded p-2 text-sm"
+            required
+          />
+        </div>
+
+        <button
+          type="button"
+          onClick={() => {
+            const nuevos = turno.turnos_horarios.filter((_, idx) => idx !== i)
+            setTurno({ ...turno, turnos_horarios: nuevos })
+          }}
+          className="text-red-600 text-sm font-medium hover:underline"
+        >
+          Eliminar
+        </button>
+      </div>
+    ))}
+
+    <button
+      type="button"
+      onClick={() =>
+        setTurno({
+          ...turno,
+          turnos_horarios: [
+            ...(turno.turnos_horarios || []),
+            { turno_horario_tipo: "", turno_horario_entrada: "", turno_horario_salida: "" },
+          ],
+        })
+      }
+      className="text-blue-600 text-sm font-semibold hover:underline mt-2"
+    >
+      + Agregar otro horario
+    </button>
   </div>
+)}
+{turno.tieneHorarios && (turno.turnos_horarios?.length === 0) && (
+  <p className="text-red-500 text-sm mt-2">
+    ⚠️ Debes agregar al menos un horario antes de guardar el turno.
+  </p>
 )}
 
     </>

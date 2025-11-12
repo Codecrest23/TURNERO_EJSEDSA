@@ -10,6 +10,7 @@ import { useLocalidades } from "../hooks/useLocalidades"
 import TurnoForm from "../components/ui/TurnoForm"
 import ButtonSmall from "../components/ui/ButtonSmall";
 import ModalDetalleTurno from "../components/ui/ModalDetalleTurno"
+import { supabase } from "../lib/supabaseClient";
 
 export default function Turnos() {
   const {
@@ -36,28 +37,6 @@ export default function Turnos() {
 
   if (loading) return <p>Cargando...</p>
 
-//   const handleAgregar = async (e) => {
-//   e.preventDefault();
-
-//   // 🔹 Copiamos el turno completo, pero quitamos el campo "tieneHorarios"
-//   const turnoParaGuardar = { ...nuevoTurno };
-//   delete turnoParaGuardar.tieneHorarios; // <--- esta línea evita el error
-
-//   // 🔹 Guardamos el turno
-//   await agregarTurno(turnoParaGuardar);
-
-//   // 🔹 Reseteamos el formulario
-//   setNuevoTurno({
-//     turno_nombre: "",
-//     turno_cantidad_dias: null,
-//     turno_cantidad_dias_descanso: null,
-//     turno_tiene_guardia_pasiva: 0,
-//     turno_es_laboral: "",
-//     turno_comentarios: "",
-//     turno_color: "#FFFFFF",
-//     turno_id_localidad:null,
-//   });
-// };
 const handleAgregar = async (e) => {
   e.preventDefault();
 
@@ -67,6 +46,7 @@ const handleAgregar = async (e) => {
     turno_horario_tipo,
     turno_horario_entrada,
     turno_horario_salida,
+    turnos_horarios = [],
     ...turnoSinHorarios
   } = nuevoTurno;
 
@@ -76,19 +56,21 @@ const handleAgregar = async (e) => {
   } else {
     turnoSinHorarios.turno_id_localidad = Number(turnoSinHorarios.turno_id_localidad);
   }
+  // 2️⃣ Verificar si faltan horarios obligatorios
+  if (tieneHorarios && turnos_horarios.length === 0) {
+    alert("⚠️ Debes agregar al menos un horario antes de guardar el turno.");
+    return;
+  }
 
-  // 3) si activó horarios, preparar array
-  const horarios = (tieneHorarios && turno_horario_tipo && turno_horario_entrada && turno_horario_salida)
-    ? [{
-        turno_horario_tipo,
-        turno_horario_entrada,
-        turno_horario_salida
-      }]
-    : [];
+const horarios = nuevoTurno.tieneHorarios
+  ? (nuevoTurno.turnos_horarios || []).filter(
+      (h) => h.turno_horario_tipo && h.turno_horario_entrada && h.turno_horario_salida
+    )
+  : [];
 
   // 4) crear turno + (opcional) horarios
   await agregarTurno(turnoSinHorarios, horarios); // ← el hook ya inserta y asocia por id_turno
-
+  await fetchTurnos(); 
   // 5) reset
   setNuevoTurno({
     turno_nombre: "",
@@ -102,50 +84,104 @@ const handleAgregar = async (e) => {
     tieneHorarios: false,
     turno_horario_tipo: "",
     turno_horario_entrada: "",
-    turno_horario_salida: ""
+    turno_horario_salida: "",
+    turnos_horarios : [],
   });
 };
 
 
   //  Editar
-  const handleEditarSubmit = async (e) => {
-    e.preventDefault()
-    await modificarTurno(TurnoEditando.id_turno, {
-      turno_nombre: TurnoEditando.turno_nombre,
-      turno_cantidad_dias: TurnoEditando.turno_cantidad_dias,
-      turno_cantidad_dias_descanso: TurnoEditando.turno_cantidad_dias_descanso,
-      turno_tiene_guardia_pasiva: TurnoEditando.turno_tiene_guardia_pasiva,
-      turno_es_laboral: TurnoEditando.turno_es_laboral,
-      turno_comentarios: TurnoEditando.turno_comentarios,
-      turno_color: TurnoEditando.turno_color,
-      turno_id_localidad: TurnoEditando.turno_id_localidad === "" || TurnoEditando.turno_id_localidad === null || isNaN(TurnoEditando.turno_id_localidad) ? null: Number(TurnoEditando.turno_id_localidad),
-    });
-//Agregado de horarios
-const yaTieneHorario = !!TurnoEditando.id_turno_horario;
+const handleEditarSubmit = async (e) => {
+  e.preventDefault();
 
-  if (TurnoEditando.tieneHorarios) {
-    // debe existir un horario válido
-    const payloadHorario = {
-      turno_horario_tipo: TurnoEditando.turno_horario_tipo,
-      turno_horario_entrada: TurnoEditando.turno_horario_entrada,
-      turno_horario_salida: TurnoEditando.turno_horario_salida,
-    };
+  // 1️⃣ Actualizar los datos base del turno
+  const turnoActualizado = {
+    turno_nombre: TurnoEditando.turno_nombre,
+    turno_cantidad_dias: TurnoEditando.turno_cantidad_dias,
+    turno_cantidad_dias_descanso: TurnoEditando.turno_cantidad_dias_descanso,
+    turno_tiene_guardia_pasiva: TurnoEditando.turno_tiene_guardia_pasiva,
+    turno_es_laboral: TurnoEditando.turno_es_laboral,
+    turno_comentarios: TurnoEditando.turno_comentarios,
+    turno_color: TurnoEditando.turno_color,
+    turno_id_localidad:
+      TurnoEditando.turno_id_localidad === "" ||
+      TurnoEditando.turno_id_localidad === null ||
+      isNaN(TurnoEditando.turno_id_localidad)
+        ? null
+        : Number(TurnoEditando.turno_id_localidad),
+  };
 
-    if (yaTieneHorario) {
-      // actualizar
-      await modificarHorario(TurnoEditando.id_turno_horario, payloadHorario);
-    } else {
-      // crear nuevo asociado al turno
-      await agregarHorario(TurnoEditando.id_turno, payloadHorario);
+try {
+  const resultado = await modificarTurno(
+    TurnoEditando.id_turno,
+    turnoActualizado
+  );
+
+  if (resultado?.error) {
+    console.error("❌ Error al modificar turno:", resultado.error);
+    alert("Error al guardar el turno");
+    return;
+  }
+
+  // ... resto del código (horarios, etc.)
+
+} catch (err) {
+  console.error("⚠️ Error inesperado al modificar turno:", err);
+  alert("Ocurrió un error al modificar el turno.");
+}
+
+  // 2️⃣ Si tiene horarios, los procesamos
+if (TurnoEditando.tieneHorarios) {
+  const horariosValidos = (TurnoEditando.turnos_horarios || []).filter(
+    (h) =>
+      h.turno_horario_tipo &&
+      h.turno_horario_entrada &&
+      h.turno_horario_salida
+  );
+
+  // Si no hay horarios válidos, avisamos
+  if (horariosValidos.length === 0) {
+    alert("⚠️ Debes agregar al menos un horario válido antes de guardar.");
+    return;
+  }
+
+  // 🔹 Borrar horarios anteriores solo si hay nuevos para insertar
+    if (horariosValidos.length > 0) {
+      await supabase
+        .from("turnos_horarios")
+        .delete()
+        .eq("id_turno", TurnoEditando.id_turno);
+
+      const nuevosHorarios = horariosValidos.map((h) => ({
+        id_turno: TurnoEditando.id_turno,
+        turno_horario_tipo: h.turno_horario_tipo,
+        turno_horario_entrada: h.turno_horario_entrada,
+        turno_horario_salida: h.turno_horario_salida,
+      }));
+
+      const { error: errorInsert } = await supabase
+        .from("turnos_horarios")
+        .insert(nuevosHorarios);
+
+      if (errorInsert) {
+        console.error("❌ Error al insertar horarios:", errorInsert);
+        alert("Error al insertar horarios.");
+      }
     }
-  } else if (yaTieneHorario) {
-    // el usuario lo apagó: eliminar horario existente
-    await eliminarHorario(TurnoEditando.id_turno_horario);
+  } else {
+    // Si el toggle está desactivado, borra todos los horarios
+    await supabase
+      .from("turnos_horarios")
+      .delete()
+      .eq("id_turno", TurnoEditando.id_turno);
   }
 
-// Fin agregado de horarios
-    setTurnoEditando(null)
-  }
+  // 3️⃣ Cerrar modal y refrescar lista
+   setTurnoEditando(null);
+   setTurnoSeleccionado(null); // 👈 evita que el modal se vuelva a abrir
+  await fetchTurnos();
+};
+
 
   return (
     <div className="max-w-7xl mx-auto space-y-8">
@@ -210,17 +246,12 @@ const yaTieneHorario = !!TurnoEditando.id_turno_horario;
            const h = TurnoSeleccionado.turnos_horarios?.[0] // primer horario (si usás 1 por turno)
             setTurnoEditando({
                         ...TurnoSeleccionado,
-                        // Aseguramos que existan los IDs crudos para selects:
-                        // empleado_id_funcion: empleadoSeleccionado.empleado_id_funcion ?? "",
-                        // empleado_id_sector: empleadoSeleccionado.empleado_id_sector ?? "",
-                        // empleado_id_turno: empleadoSeleccionado.empleado_id_turno ?? "",
                         turno_id_localidad: TurnoSeleccionado.turno_id_localidad ?? TurnoSeleccionado.localidades?.id_localidad ?? null,
                         //agregado de horarios
-                        tieneHorarios: !!h,
-                        turno_horario_tipo: h?.turno_horario_tipo || "",
-                        turno_horario_entrada: h?.turno_horario_entrada || "",
-                        turno_horario_salida: h?.turno_horario_salida || "",
-                        id_turno_horario: h?.id_turno_horario // lo guardamos para saber si hay que modificar/eliminar
+                        tieneHorarios:
+                        TurnoSeleccionado.turnos_horarios &&
+                        TurnoSeleccionado.turnos_horarios.length > 0,
+                        turnos_horarios: TurnoSeleccionado.turnos_horarios || [],
                       })
                     }}
                     disabled={!TurnoSeleccionado}

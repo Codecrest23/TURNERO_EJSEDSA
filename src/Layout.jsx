@@ -1,6 +1,6 @@
 import { Outlet, Link,useNavigate  } from "react-router-dom"
 import { useState } from "react"
-import { Menu, X, User, Users, Calendar, Map, Layers, LogIn,Clock9, Clock,LogOut,BriefcaseBusiness, IdCardLanyard,UserPlus} from "lucide-react"
+import { Menu, X, User, Users,Calendar, CalendarClock, Map, Layers, LogIn,Clock9, Clock,LogOut,BriefcaseBusiness, IdCardLanyard,UserPlus} from "lucide-react"
 import { supabase } from "./lib/supabaseClient"
 import { useAuth } from "./context/AuthContext"
 
@@ -45,7 +45,7 @@ export default function Layout() {
         <nav className="flex flex-col gap-2 p-2">
           <SidebarLink to="/planificacion" icon={<Calendar size={20} />} open={open} label="Planificación" />
           {/* <SidebarLink to="/" icon={<Home size={20} />} open={open} label="Inicio" /> */}
-          {(rol === "Admin" || rol === "Supervisor") && (<SidebarLink to="/asignacion" icon={<IconAsignarTurno size={20} />} open={open} label="Asignacion de Turnos" />)}
+          {(rol === "Admin" || rol === "Supervisor") && (<SidebarLink to="/asignacion" icon={<CalendarClock size={20} />} open={open} label="Asignacion de Turnos" />)}
           {(rol === "Admin" || rol === "Supervisor") && (<SidebarLink to="/turnos" icon={<Clock size={20} />} open={open} label="Turnos" />)}
           {(rol === "Admin" || rol === "Supervisor") && (<SidebarLink to="/empleados" icon={<IdCardLanyard size={20} />} open={open} label="Empleados" />)}
           {(rol === "Admin" || rol === "Supervisor") && (<SidebarLink to="/funciones-sectores" icon={<BriefcaseBusiness size={20} />} open={open} label="Funciones y Sectores" />)}
