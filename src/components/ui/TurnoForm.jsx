@@ -10,7 +10,23 @@ export default function TurnoForm({ turno, setTurno, localidades }) {
         className="border rounded px-3 py-2 w-full"
         required
       />
-
+      
+ {/* Es laboral */}
+      <select
+        value={turno.turno_motivo || ""}
+        onChange={(e) => setTurno({ ...turno, turno_motivo: e.target.value })}
+        className="border rounded px-3 py-2 w-full"
+        required
+      >
+        <option value="">Seleccionar Motivo</option>
+        <option>Atencion de usina</option>
+        <option>Descanso</option>
+        <option>Licencia por enfermedad</option>
+        <option>Guardia Pasiva</option>
+        <option>Vacaciones</option>
+        <option>Trabajos en Taller/TDI</option>
+        <option>Trabajos en Taller</option>
+      </select>
       <select
         value={
           turno.turno_id_localidad ??
@@ -48,7 +64,7 @@ export default function TurnoForm({ turno, setTurno, localidades }) {
       />
 
       {/* Guardia pasiva */}
-      <div className="flex items-center justify-between px-1 py-2">
+      {/* <div className="flex items-center justify-between px-1 py-2">
         <span className="text-gray-700 font-medium">¿Tiene guardia pasiva?</span>
         <div className="flex items-center gap-3">
           <span className={`text-sm font-medium ${turno.turno_tiene_guardia_pasiva === 1 ? "text-gray-400" : "text-gray-800"}`}>No</span>
@@ -68,7 +84,7 @@ export default function TurnoForm({ turno, setTurno, localidades }) {
           </label>
           <span className={`text-sm font-medium ${turno.turno_tiene_guardia_pasiva === 1 ? "text-blue-600" : "text-gray-400"}`}>Sí</span>
         </div>
-      </div>
+      </div> */}
 
       {/* Es laboral */}
       <select

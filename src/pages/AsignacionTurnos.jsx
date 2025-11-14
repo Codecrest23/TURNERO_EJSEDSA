@@ -1,4 +1,3 @@
-import { useState } from "react"
 import { useAsignaciones } from "../hooks/useAsignaciones"
 import { useEmpleados } from "../hooks/useEmpleados"
 import { useTurnos } from "../hooks/useTurnos"
@@ -9,6 +8,8 @@ import ModalAddItem from "../components/ui/ModalAddItem"
 import Modal from "../components/ui/Modal"
 import { Title, Subtitle } from "../components/ui/Typography"
 import { UserPlus } from "lucide-react"
+import Select from "react-select"
+import { useState, useEffect } from "react"
 
 export default function AsignacionTurnos() {
   const { asignaciones, loading, fetchAsignaciones, agregarAsignacion, eliminarAsignacion } =
@@ -16,6 +17,7 @@ export default function AsignacionTurnos() {
   const { empleados } = useEmpleados()
   const { turnos } = useTurnos()
   const { localidades } = useLocalidades()
+  const [motivoTurnoInfo, setMotivoTurnoInfo] = useState("");
 
   const [nuevaAsignacion, setNuevaAsignacion] = useState({
     asignacion_empleado_id: "",
@@ -26,20 +28,37 @@ export default function AsignacionTurnos() {
     asignacion_comentario: "",
   })
   const [asignacionSeleccionada, setAsignacionSeleccionada] = useState(null)
+    //agrgar para que automaticamente se coloque la localidad 
+
+useEffect(() => {
+  if (!nuevaAsignacion.asignacion_empleado_id) return;
+
+  const empleado = empleados.find(
+    (e) => e.id_empleado == nuevaAsignacion.asignacion_empleado_id
+  );
+
+  if (!empleado) return;
+
+  setNuevaAsignacion((prev) => ({
+    ...prev,
+    asignacion_localidad_id: empleado.empleado_id_localidad || "",
+    asignacion_turno_id: empleado.empleado_id_turno || "",
+  }));
+}, [nuevaAsignacion.asignacion_empleado_id, empleados]);
 
   if (loading) return <p>Cargando...</p>
 
   const handleAgregar = async (e) => {
     e.preventDefault()
-    if (
-      !nuevaAsignacion.asignacion_empleado_id ||
-      !nuevaAsignacion.asignacion_turno_id ||
-      !nuevaAsignacion.asignacion_fecha_desde ||
-      !nuevaAsignacion.asignacion_fecha_hasta
-    ) {
-      alert("⚠️ Todos los campos obligatorios deben completarse.")
-      return
-    }
+    // if (
+    //   !nuevaAsignacion.asignacion_empleado_id ||
+    //   !nuevaAsignacion.asignacion_turno_id ||
+    //   !nuevaAsignacion.asignacion_fecha_desde ||
+    //   !nuevaAsignacion.asignacion_fecha_hasta
+    // ) {
+    //   alert("⚠️ Todos los campos obligatorios deben completarse.")
+    //   return
+    // }
 
     await agregarAsignacion({
       ...nuevaAsignacion,
@@ -58,7 +77,6 @@ export default function AsignacionTurnos() {
       asignacion_comentario: "",
     })
   }
-
   return (
     <div className="max-w-7xl mx-auto space-y-8">
       <Title>
@@ -73,10 +91,12 @@ export default function AsignacionTurnos() {
         headers={[
           "Empleado",
           "Turno",
+          "Motivo",
           "Localidad",
           "Desde",
           "Hasta",
           "Comentario",
+          "Detalles"
         ]}
       >
         {asignaciones.map((a) => (
@@ -95,20 +115,22 @@ export default function AsignacionTurnos() {
                 : ""
             }`}
           >
-            <td className="px-6 py-3">
-              {a.empleados?.empleado_nombre} {a.empleados?.empleado_apellido}
+            <td className="px-6 py-3 ">
+                  {a.empleados?.empleado_nombre_apellido}
             </td>
             <td className="px-6 py-3 flex items-center gap-2">
-              <div
-                className="w-4 h-4 rounded-full border"
-                style={{ backgroundColor: a.turnos?.turno_color }}
-              ></div>
-              {a.turnos?.turno_nombre}
+              <div className="line-clamp-2">
+                {a.turnos?.turno_nombre}
+              </div>
+            </td>
+            <td className="px-6 py-3">
+              {a.turnos?.turno_motivo}
             </td>
             <td className="px-6 py-3">{a.localidades?.localidad_nombre}</td>
-            <td className="px-6 py-3">{a.asignacion_fecha_desde}</td>
-            <td className="px-6 py-3">{a.asignacion_fecha_hasta}</td>
-            <td className="px-6 py-3">{a.asignacion_comentario || "-"}</td>
+            <td className="px-6 py-3">{new Date(a.asignacion_fecha_desde).toLocaleDateString("es-AR")}</td>
+            <td className="px-6 py-3">{new Date(a.asignacion_fecha_desde).toLocaleDateString("es-AR")}</td>
+            <td className="px-6 py-3 max-w-xs"> <div className="line-clamp-2">{a.asignacion_comentario || "-"}</div></td>
+            <td className="px-6 py-3">-</td>
           </tr>
         ))}
       </Table>
@@ -131,60 +153,85 @@ export default function AsignacionTurnos() {
           buttonLabel="Agregar"
           onSubmit={handleAgregar}
         >
-          <form className="space-y-3">
-            <select
-              className="w-full border p-2 rounded"
-              value={nuevaAsignacion.asignacion_empleado_id}
-              onChange={(e) =>
-                setNuevaAsignacion({
-                  ...nuevaAsignacion,
-                  asignacion_empleado_id: e.target.value,
-                })
-              }
-            >
-              <option value="">Elegir empleado...</option>
-              {empleados.map((emp) => (
-                <option key={emp.id_empleado} value={emp.id_empleado}>
-                  {emp.empleado_nombre} {emp.empleado_apellido}
-                </option>
-              ))}
-            </select>
+          
 
-            <select
-              className="w-full border p-2 rounded"
-              value={nuevaAsignacion.asignacion_turno_id}
-              onChange={(e) =>
-                setNuevaAsignacion({
-                  ...nuevaAsignacion,
-                  asignacion_turno_id: e.target.value,
-                })
-              }
-            >
-              <option value="">Elegir turno...</option>
-              {turnos.map((t) => (
-                <option key={t.id_turno} value={t.id_turno}>
-                  {t.turno_nombre}
-                </option>
-              ))}
-            </select>
+<Select
+  options={empleados.map(e => ({
+    value: e.id_empleado,
+    label: e.empleado_nombre_apellido
+  }))}
+  onChange={(opt) =>
+    setNuevaAsignacion({
+      ...nuevaAsignacion,
+      asignacion_empleado_id: opt?.value,
+    })
+  }
+  placeholder="Seleccionar Empleado"
+  isSearchable
+/>
 
-            <select
-              className="w-full border p-2 rounded"
-              value={nuevaAsignacion.asignacion_localidad_id}
-              onChange={(e) =>
-                setNuevaAsignacion({
-                  ...nuevaAsignacion,
-                  asignacion_localidad_id: e.target.value,
-                })
-              }
-            >
-              <option value="">Elegir localidad...</option>
-              {localidades.map((l) => (
-                <option key={l.id_localidad} value={l.id_localidad}>
-                  {l.localidad_nombre}
-                </option>
-              ))}
-            </select>
+<Select
+  className="w-full"
+  placeholder="Seleccionar Localidad"
+  isSearchable={true}
+  value={
+    localidades
+      .map(l => ({
+        value: l.id_localidad,
+        label: l.localidad_nombre
+      }))
+      .find(opt => opt.value == nuevaAsignacion.asignacion_localidad_id) || null
+  }
+  onChange={(opt) =>
+    setNuevaAsignacion({
+      ...nuevaAsignacion,
+      asignacion_localidad_id: opt?.value || ""
+    })
+  }
+  options={localidades.map(l => ({
+    value: l.id_localidad,
+    label: l.localidad_nombre
+  }))}
+/>
+
+<Select
+  className="w-full"
+  placeholder="Seleccionar Turno"
+  isSearchable={true}
+  value={
+    turnos
+      .map(t => ({
+        value: t.id_turno,
+        label: t.turno_nombre
+      }))
+      .find(opt => opt.value == nuevaAsignacion.asignacion_turno_id) || null
+  }
+ onChange={(opt) => {
+    const turno = turnos.find(t => t.id_turno == opt?.value);
+
+    // setear el turno elegido (esto ya lo tenías)
+    setNuevaAsignacion({
+      ...nuevaAsignacion,
+      asignacion_turno_id: opt?.value,
+    });
+
+    // setear motivo solo para mostrar
+    setMotivoTurnoInfo(turno?.turno_motivo || "");
+  }}
+  options={turnos.map(t => ({
+    value: t.id_turno,
+    label: t.turno_nombre
+  }))}
+/>
+<label className="block text-sm font-medium text-gray-700 mt-2">
+  Motivo del turno
+</label>
+<input
+  type="text"
+  className="w-full border p-2 rounded bg-gray-100 text-gray-600"
+  value={motivoTurnoInfo}
+  disabled
+/>
 
             <input
               type="date"
@@ -220,7 +267,7 @@ export default function AsignacionTurnos() {
                 })
               }
             />
-          </form>
+         
         </ModalAddItem>
       </div>
     </div>

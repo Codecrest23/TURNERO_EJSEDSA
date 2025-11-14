@@ -27,7 +27,7 @@ export default function Turnos() {
   } = useTurnos()
 
   const [nuevoTurno, setNuevoTurno] = useState({turno_nombre: "", turno_cantidad_dias: null,turno_cantidad_dias_descanso: null,turno_tiene_guardia_pasiva: 0,
-        turno_es_laboral:"",turno_comentarios: "",turno_color: "#000000", turno_id_localidad:null})
+        turno_es_laboral:"",turno_comentarios: "",turno_color: "#000000", turno_id_localidad:null, turno_motivo:null})
   const [TurnoEditando, setTurnoEditando] = useState(null)
   const [TurnoEliminar, setTurnoEliminar] = useState(null)
   const [TurnoSeleccionado, setTurnoSeleccionado] = useState(null)
@@ -86,6 +86,7 @@ const horarios = nuevoTurno.tieneHorarios
     turno_horario_entrada: "",
     turno_horario_salida: "",
     turnos_horarios : [],
+    turno_motivo:"",
   });
 };
 
@@ -103,6 +104,7 @@ const handleEditarSubmit = async (e) => {
     turno_es_laboral: TurnoEditando.turno_es_laboral,
     turno_comentarios: TurnoEditando.turno_comentarios,
     turno_color: TurnoEditando.turno_color,
+    turno_motivo: TurnoEditando.turno_motivo,
     turno_id_localidad:
       TurnoEditando.turno_id_localidad === "" ||
       TurnoEditando.turno_id_localidad === null ||
@@ -194,7 +196,7 @@ if (TurnoEditando.tieneHorarios) {
       <Subtitle>Listado de Turnos y Licencias</Subtitle>
 
       {/* 🧾 Tabla */}
-      <Table headers={[ "N°", "Turno","Localidad", "Cantidad de días", "Días de descanso", "Guardia Pasiva?", "Es Laboral?", 
+      <Table headers={[ "N°", "Turno","Localidad", "Cantidad de días", "Días de descanso", "Turno Motivo", "Es Laboral?", 
                         "Notas", "Color","Detalles"]}>
           {turnos.map((tur, index) => (
             <tr
@@ -212,7 +214,8 @@ if (TurnoEditando.tieneHorarios) {
               <td className="px-6 py-3">{tur.localidades?.localidad_nombre|| "Sin Localidad" }</td>
               <td className="px-6 py-3">{tur.turno_cantidad_dias }</td>
               <td className="px-6 py-3">{tur.turno_cantidad_dias_descanso }</td>
-              <td className="px-6 py-3">{tur.turno_tiene_guardia_pasiva === 1 ? "Sí" : "No"}</td>
+              <td className="px-6 py-3">{tur.turno_motivo }</td>
+              {/* <td className="px-6 py-3">{tur.turno_tiene_guardia_pasiva === 1 ? "Sí" : "No"}</td> */}
               <td className="px-6 py-3">{tur.turno_es_laboral }</td>
               <td className="px-6 py-3"><div className="max-w-[250px] overflow-hidden text-ellipsis line-clamp-3">
                 {tur.turno_comentarios}</div></td><td className="px-6 py-3"><div
