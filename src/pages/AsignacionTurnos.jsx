@@ -6,10 +6,12 @@ import Table from "../components/ui/Table"
 import Button from "../components/ui/Button"
 import ModalAddItem from "../components/ui/ModalAddItem"
 import Modal from "../components/ui/Modal"
+import ModalDetalleAsignacion from "../components/ui/ModalDetalleAsignacion"
 import { Title, Subtitle } from "../components/ui/Typography"
 import { UserPlus } from "lucide-react"
 import Select from "react-select"
 import { useState, useEffect } from "react"
+import ButtonSmall from "../components/ui/ButtonSmall"
 
 export default function AsignacionTurnos() {
   const { asignaciones, loading, fetchAsignaciones, agregarAsignacion, eliminarAsignacion } =
@@ -18,6 +20,7 @@ export default function AsignacionTurnos() {
   const { turnos } = useTurnos()
   const { localidades } = useLocalidades()
   const [motivoTurnoInfo, setMotivoTurnoInfo] = useState("");
+  const [detalleAsignacion, setDetalleAsignacion] = useState(null);
 
   const [nuevaAsignacion, setNuevaAsignacion] = useState({
     asignacion_empleado_id: "",
@@ -130,7 +133,17 @@ useEffect(() => {
             <td className="px-6 py-3">{new Date(a.asignacion_fecha_desde).toLocaleDateString("es-AR")}</td>
             <td className="px-6 py-3">{new Date(a.asignacion_fecha_desde).toLocaleDateString("es-AR")}</td>
             <td className="px-6 py-3 max-w-xs"> <div className="line-clamp-2">{a.asignacion_comentario || "-"}</div></td>
-            <td className="px-6 py-3">-</td>
+            <td className="px-6 py-3 text-center">
+              <ButtonSmall
+                variant="primary"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setDetalleAsignacion(a);
+                }}
+              >
+                Ver detalle
+              </ButtonSmall>
+            </td>
           </tr>
         ))}
       </Table>
@@ -170,68 +183,68 @@ useEffect(() => {
   isSearchable
 />
 
-<Select
-  className="w-full"
-  placeholder="Seleccionar Localidad"
-  isSearchable={true}
-  value={
-    localidades
-      .map(l => ({
-        value: l.id_localidad,
-        label: l.localidad_nombre
-      }))
-      .find(opt => opt.value == nuevaAsignacion.asignacion_localidad_id) || null
-  }
-  onChange={(opt) =>
-    setNuevaAsignacion({
-      ...nuevaAsignacion,
-      asignacion_localidad_id: opt?.value || ""
-    })
-  }
-  options={localidades.map(l => ({
-    value: l.id_localidad,
-    label: l.localidad_nombre
-  }))}
-/>
+                  <Select
+                    className="w-full"
+                    placeholder="Seleccionar Localidad"
+                    isSearchable={true}
+                    value={
+                      localidades
+                        .map(l => ({
+                          value: l.id_localidad,
+                          label: l.localidad_nombre
+                        }))
+                        .find(opt => opt.value == nuevaAsignacion.asignacion_localidad_id) || null
+                    }
+                    onChange={(opt) =>
+                      setNuevaAsignacion({
+                        ...nuevaAsignacion,
+                        asignacion_localidad_id: opt?.value || ""
+                      })
+                    }
+                    options={localidades.map(l => ({
+                      value: l.id_localidad,
+                      label: l.localidad_nombre
+                    }))}
+                  />
 
-<Select
-  className="w-full"
-  placeholder="Seleccionar Turno"
-  isSearchable={true}
-  value={
-    turnos
-      .map(t => ({
-        value: t.id_turno,
-        label: t.turno_nombre
-      }))
-      .find(opt => opt.value == nuevaAsignacion.asignacion_turno_id) || null
-  }
- onChange={(opt) => {
-    const turno = turnos.find(t => t.id_turno == opt?.value);
+                  <Select
+                    className="w-full"
+                    placeholder="Seleccionar Turno"
+                    isSearchable={true}
+                    value={
+                      turnos
+                        .map(t => ({
+                          value: t.id_turno,
+                          label: t.turno_nombre
+                        }))
+                        .find(opt => opt.value == nuevaAsignacion.asignacion_turno_id) || null
+                    }
+                  onChange={(opt) => {
+                      const turno = turnos.find(t => t.id_turno == opt?.value);
 
-    // setear el turno elegido (esto ya lo tenías)
-    setNuevaAsignacion({
-      ...nuevaAsignacion,
-      asignacion_turno_id: opt?.value,
-    });
+                      // setear el turno elegido (esto ya lo tenías)
+                      setNuevaAsignacion({
+                        ...nuevaAsignacion,
+                        asignacion_turno_id: opt?.value,
+                      });
 
-    // setear motivo solo para mostrar
-    setMotivoTurnoInfo(turno?.turno_motivo || "");
-  }}
-  options={turnos.map(t => ({
-    value: t.id_turno,
-    label: t.turno_nombre
-  }))}
-/>
-<label className="block text-sm font-medium text-gray-700 mt-2">
-  Motivo del turno
-</label>
-<input
-  type="text"
-  className="w-full border p-2 rounded bg-gray-100 text-gray-600"
-  value={motivoTurnoInfo}
-  disabled
-/>
+                      // setear motivo solo para mostrar
+                      setMotivoTurnoInfo(turno?.turno_motivo || "");
+                    }}
+                    options={turnos.map(t => ({
+                      value: t.id_turno,
+                      label: t.turno_nombre
+                    }))}
+                  />
+                  <label className="block text-sm font-medium text-gray-700 mt-2">
+                    Motivo del turno
+                  </label>
+                  <input
+                    type="text"
+                    className="w-full border p-2 rounded bg-gray-100 text-gray-600"
+                    value={motivoTurnoInfo}
+                    disabled
+                  />
 
             <input
               type="date"
@@ -270,6 +283,14 @@ useEffect(() => {
          
         </ModalAddItem>
       </div>
+      {detalleAsignacion && (
+          <ModalDetalleAsignacion
+            asignacion={detalleAsignacion}
+            onClose={() => setDetalleAsignacion(null)}
+          />
+        )}
+
+
     </div>
   )
 }
