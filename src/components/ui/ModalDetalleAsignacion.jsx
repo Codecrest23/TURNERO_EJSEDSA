@@ -1,6 +1,6 @@
 import Modal from "./ModalXL"
 import Button from "./Button"
-
+import { icons, FileText} from "lucide-react"
 export default function ModalDetalleAsignacion({ asignacion, onClose }) {
   if (!asignacion) return null;
 
@@ -10,10 +10,15 @@ export default function ModalDetalleAsignacion({ asignacion, onClose }) {
 
   return (
     <Modal
-      title={`📋 Detalle de Asignación`}
+      title= {
+    <div className="flex items-center gap-2">
+      <FileText className=" text-gray-700" />
+      <span>Detalle de Asignación</span>
+    </div>
+  }
       onClose={onClose}
     >
-      <div className="space-y-6 p-3 text-gray-800">
+      <div className="space-y-6 p-3 text-gray-800 ">
 
         {/* GRID PRINCIPAL */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-10 gap-y-5">
@@ -41,9 +46,7 @@ export default function ModalDetalleAsignacion({ asignacion, onClose }) {
         {/* COMENTARIOS DEL TURNO */}
         <Section label="Comentarios del turno">
           <ScrollableBox>
-            {/* <p className="border rounded bg-gray-50 p-4 mt-2 whitespace-pre-wrap text-gray-700 text-base leading-relaxed shadow-sm"> */}
             {turno?.turno_comentarios || "Sin comentarios"}
-          {/* </p> */}
             
           </ScrollableBox>
         </Section>
@@ -51,9 +54,7 @@ export default function ModalDetalleAsignacion({ asignacion, onClose }) {
         {/* COMENTARIO DE ASIGNACIÓN */}
         <Section label="Comentario de la asignación">
           <ScrollableBox>
-         {/* <p className="border rounded bg-gray-50 p-4 mt-2 whitespace-pre-wrap text-gray-700 text-base leading-relaxed shadow-sm"> */}
             {asignacion.asignacion_comentario || "Sin comentarios"}
-          {/* </p> */}
         </ScrollableBox>
         </Section>
 

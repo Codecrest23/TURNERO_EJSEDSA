@@ -1,6 +1,6 @@
 import Modal from "./Modal"
 import Button from "./Button"
-
+import { FileText} from "lucide-react"
 export default function ModalDetalleTurno({ turno, onClose }) {
   if (!turno) return null
 
@@ -17,7 +17,10 @@ export default function ModalDetalleTurno({ turno, onClose }) {
   } = turno
 
   return (
-    <Modal title={`🕒 ${turno_nombre}`} onClose={onClose}>
+    <Modal title={ <div className="flex items-center gap-2">
+      <FileText className=" text-gray-700" />
+      <span> {turno_nombre}</span> </div>
+  } onClose={onClose}>
       <div className="space-y-6 p-3 text-gray-800">
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-4">
           <Detail label="Localidad" value={localidades?.localidad_nombre || "Sin Localidad"} />

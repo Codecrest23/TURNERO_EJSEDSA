@@ -53,8 +53,18 @@ export default function Empleados() {
       empleado_color: "",
     })
   }
+const limpiarFormulario = () => {
+  setNuevoEmpleado({
+      empleado_nombre_apellido: "",
+      empleado_id_funcion: "",
+      empleado_id_sector: "",
+      empleado_id_localidad: "",
+      empleado_id_turno: "",
+      empleado_color: "",
+    })
+};
 
-  // 🟠 Editar
+  //  Editar
   const handleEditarSubmit = async (e) => {
     e.preventDefault()
     await modificarEmpleado(empleadoEditando.id_empleado, empleadoEditando)
@@ -144,6 +154,7 @@ export default function Empleados() {
             </span>
           }
           onSubmit={handleAgregar}
+          onClose={limpiarFormulario}
         >
           {/* Campos del modal */}
           <input
@@ -198,6 +209,20 @@ export default function Empleados() {
               </option>
             ))}
           </select>
+          <select
+            value={nuevoEmpleado.empleado_id_localidad}
+            onChange={(e) =>
+              setNuevoEmpleado({...nuevoEmpleado, empleado_id_localidad: e.target.value})
+            }
+            className="border rounded px-3 py-2 w-full"
+          >
+          <option value="" >Seleccionar localidad</option>
+            {localidades.map((loc) => (
+          <option key={loc.id_localidad} value={loc.id_localidad}>
+                {loc.localidad_nombre}
+          </option>
+            ))}
+          </select>
 
           <select
             value={nuevoEmpleado.empleado_id_turno}
@@ -214,21 +239,6 @@ export default function Empleados() {
               <option key={t.id_turno} value={t.id_turno}>
                 {t.turno_nombre}
               </option>
-            ))}
-          </select>
-
-          <select
-            value={nuevoEmpleado.empleado_id_localidad}
-            onChange={(e) =>
-              setNuevoEmpleado({...nuevoEmpleado, empleado_id_localidad: e.target.value})
-            }
-            className="border rounded px-3 py-2 w-full"
-          >
-          <option value="" >Seleccionar localidad</option>
-            {localidades.map((loc) => (
-          <option key={loc.id_localidad} value={loc.id_localidad}>
-                {loc.localidad_nombre}
-          </option>
             ))}
           </select>
         </ModalAddItem>

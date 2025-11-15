@@ -6,12 +6,10 @@ export default function ModalXL({ title, children, onClose }) {
       <div className="
         bg-white p-6 rounded-xl shadow-xl 
         w-full max-w-4xl         /* ancho más grande */
-        max-h-[85vh]             /* límite de alto */
-        overflow-y-auto          /* scroll interno */
       ">
         
         {/* HEADER */}
-        <div className="flex justify-between items-center mb-4">
+        <div className="flex justify-between items-center mb-4 rounded-t-xl">
           <h2 className="text-xl font-bold">{title}</h2>
           <button
             onClick={onClose}
@@ -22,7 +20,7 @@ export default function ModalXL({ title, children, onClose }) {
         </div>
 
         {/* CONTENIDO */}
-        <div className="pr-2"> {/* padding derecho para scroll */}
+        <div className="px-6 py-4 max-h-[80vh] overflow-y-auto rounded-b-xl"> {/* padding derecho para scroll */}
           {children}
         </div>
 

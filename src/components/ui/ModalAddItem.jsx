@@ -3,7 +3,7 @@ import Modal from "./Modal"
 import Button from "./Button"
 import { LayoutGrid, PencilLine, Trash, CirclePlus } from "lucide-react"
 
-export default function AddItem({ title = "Agregar", children, onSubmit }) {
+export default function AddItem({ title = "Agregar", children, onSubmit, onClose}) {
   const [open, setOpen] = useState(false)
 
   const handleSubmit = async (e) => {
@@ -31,7 +31,7 @@ export default function AddItem({ title = "Agregar", children, onSubmit }) {
 
             {/* Botones fijos al final */}
             <div className="flex justify-end gap-2 pt-3  sticky bottom-0">
-              <Button variant="gray" onClick={() => setOpen(false)}>
+              <Button variant="gray" onClick={() => {setOpen(false); if (onClose) onClose()}}>
                 Cancelar
               </Button>
               <Button type="submit" variant="primary">

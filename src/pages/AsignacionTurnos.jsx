@@ -31,8 +31,21 @@ export default function AsignacionTurnos() {
     asignacion_comentario: "",
   })
   const [asignacionSeleccionada, setAsignacionSeleccionada] = useState(null)
-    //agrgar para que automaticamente se coloque la localidad 
+const limpiarFormulario = () => {
+  setNuevaAsignacion({
+    asignacion_empleado_id: "",
+    asignacion_localidad_id: "",
+    asignacion_turno_id: "",
+    asignacion_fecha_desde: "",
+    asignacion_fecha_hasta: "",
+    asignacion_comentario: "",
+  });
 
+  setMotivoTurnoInfo("");   // 🔥 limpia el input informativo
+};
+
+
+//agrgar para que automaticamente se coloque la localidad 
 useEffect(() => {
   if (!nuevaAsignacion.asignacion_empleado_id) return;
 
@@ -47,22 +60,17 @@ useEffect(() => {
     asignacion_localidad_id: empleado.empleado_id_localidad || "",
     asignacion_turno_id: empleado.empleado_id_turno || "",
   }));
-}, [nuevaAsignacion.asignacion_empleado_id, empleados]);
+    //Completar también el motivo solo informativo
+      const turno = turnos.find(
+    (t) => t.id_turno == empleado.empleado_id_turno
+  );
+  setMotivoTurnoInfo(turno?.turno_motivo || "");
+}, [nuevaAsignacion.asignacion_empleado_id, empleados, turnos]);
 
   if (loading) return <p>Cargando...</p>
 
   const handleAgregar = async (e) => {
     e.preventDefault()
-    // if (
-    //   !nuevaAsignacion.asignacion_empleado_id ||
-    //   !nuevaAsignacion.asignacion_turno_id ||
-    //   !nuevaAsignacion.asignacion_fecha_desde ||
-    //   !nuevaAsignacion.asignacion_fecha_hasta
-    // ) {
-    //   alert("⚠️ Todos los campos obligatorios deben completarse.")
-    //   return
-    // }
-
     await agregarAsignacion({
       ...nuevaAsignacion,
       asignacion_empleado_id: Number(nuevaAsignacion.asignacion_empleado_id),
@@ -71,15 +79,52 @@ useEffect(() => {
     })
 
     await fetchAsignaciones()
-    setNuevaAsignacion({
-      asignacion_empleado_id: "",
-      asignacion_turno_id: "",
-      asignacion_localidad_id: "",
-      asignacion_fecha_desde: "",
-      asignacion_fecha_hasta: "",
-      asignacion_comentario: "",
-    })
+    limpiarFormulario();
   }
+
+// console.log(" LOCALIDAD SELECCIONADA:", nuevaAsignacion.asignacion_localidad_id);
+// console.log("typeof:", typeof nuevaAsignacion.asignacion_localidad_id);
+
+// console.log(" Turnos completos:");
+// turnos.forEach(t =>
+//   console.log(
+//     "id_turno:", t.id_turno,
+//     "| nombre:", t.turno_nombre,
+//     "| turno_id_localidad:", t.turno_id_localidad,
+//     "| typeof:", typeof t.turno_id_localidad
+//   )
+// );
+
+// OPCIONES AGRUPADAS PARA EL SELECT DE TURNOS
+const locID = Number(nuevaAsignacion.asignacion_localidad_id);
+//console.log("🔎 locID normalizado:", locID, "typeof:", typeof locID);
+// Turnos asociados
+const turnosLocalidad = turnos
+  .filter(t => Number(t.turno_id_localidad) === locID)
+  .map(t => ({
+    label: t.turno_nombre , //+ " 🟩"
+    value: t.id_turno
+  }));
+//console.log("🎯 Turnos que matchean:", turnosLocalidad);
+// Otros turnos
+const otrosTurnos = turnos
+  .filter(t => Number(t.turno_id_localidad) !== locID)
+  .map(t => ({
+    label: t.turno_nombre,
+    value: t.id_turno
+  }));
+
+const opcionesTurnos = [
+  ...(turnosLocalidad.length > 0
+    ? [{ label: "Turnos de esta Localidad", options: turnosLocalidad }]
+    : []),
+  ...(otrosTurnos.length > 0
+    ? [{ label: "Otros Turnos", options: otrosTurnos }]
+    : [])
+];
+
+// OPCIONES AGRUPADAS PARA EL SELECT DE TURNOS
+
   return (
     <div className="max-w-7xl mx-auto space-y-8">
       <Title>
@@ -89,7 +134,7 @@ useEffect(() => {
         </div>
       </Title>
       <Subtitle>Asignar turnos a empleados</Subtitle>
-
+{/* INICIO DE TABLA */}
       <Table
         headers={[
           "Empleado",
@@ -147,7 +192,7 @@ useEffect(() => {
           </tr>
         ))}
       </Table>
-
+{/* FIN DE TABLA */}
       {/* Botones */}
       <div className="flex justify-end gap-2 mt-4">
         <Button
@@ -160,28 +205,28 @@ useEffect(() => {
         >
           Eliminar
         </Button>
-
-        <ModalAddItem
-          title="Nueva Asignación"
-          buttonLabel="Agregar"
-          onSubmit={handleAgregar}
-        >
-          
-
-<Select
-  options={empleados.map(e => ({
-    value: e.id_empleado,
-    label: e.empleado_nombre_apellido
-  }))}
-  onChange={(opt) =>
-    setNuevaAsignacion({
-      ...nuevaAsignacion,
-      asignacion_empleado_id: opt?.value,
-    })
-  }
-  placeholder="Seleccionar Empleado"
-  isSearchable
-/>
+{/* INICIO DE AGREGAR */}
+              <ModalAddItem
+                title="Nueva Asignación"
+                buttonLabel="Agregar"
+                onSubmit={handleAgregar}
+                onClose={limpiarFormulario}
+              >
+                  <Select
+                    options={empleados.map(e => ({
+                      value: e.id_empleado,
+                      label: e.empleado_nombre_apellido
+                    }))}
+                    onChange={(opt) =>
+                      setNuevaAsignacion({
+                        ...nuevaAsignacion,
+                        asignacion_empleado_id: opt?.value,
+                      })
+                    }
+                    placeholder="Seleccionar Empleado"
+                    isSearchable
+                    required
+                  />
 
                   <Select
                     className="w-full"
@@ -205,9 +250,11 @@ useEffect(() => {
                       value: l.id_localidad,
                       label: l.localidad_nombre
                     }))}
+                    required
+
                   />
 
-                  <Select
+                  {/* <Select
                     className="w-full"
                     placeholder="Seleccionar Turno"
                     isSearchable={true}
@@ -219,7 +266,7 @@ useEffect(() => {
                         }))
                         .find(opt => opt.value == nuevaAsignacion.asignacion_turno_id) || null
                     }
-                  onChange={(opt) => {
+                    onChange={(opt) => {
                       const turno = turnos.find(t => t.id_turno == opt?.value);
 
                       // setear el turno elegido (esto ya lo tenías)
@@ -235,7 +282,32 @@ useEffect(() => {
                       value: t.id_turno,
                       label: t.turno_nombre
                     }))}
-                  />
+                  /> */}
+                <Select
+                  className="w-full"
+                  placeholder="Seleccionar Turno"
+                  isSearchable={true}
+                  value={
+                    turnos
+                      .map(t => ({
+                        value: t.id_turno,
+                        label: t.turno_nombre
+                      }))
+                      .find(opt => opt.value == nuevaAsignacion.asignacion_turno_id) || null
+                  }
+                  onChange={(opt) => {
+                    const turno = turnos.find(t => t.id_turno == opt?.value);
+
+                    setNuevaAsignacion({
+                      ...nuevaAsignacion,
+                      asignacion_turno_id: opt?.value,
+                    });
+
+                    setMotivoTurnoInfo(turno?.turno_motivo || "");
+                  }}
+                  options={opcionesTurnos}
+                />
+
                   <label className="block text-sm font-medium text-gray-700 mt-2">
                     Motivo del turno
                   </label>
@@ -246,50 +318,54 @@ useEffect(() => {
                     disabled
                   />
 
-            <input
-              type="date"
-              className="w-full border p-2 rounded"
-              value={nuevaAsignacion.asignacion_fecha_desde}
-              onChange={(e) =>
-                setNuevaAsignacion({
-                  ...nuevaAsignacion,
-                  asignacion_fecha_desde: e.target.value,
-                })
-              }
-            />
-            <input
-              type="date"
-              className="w-full border p-2 rounded"
-              value={nuevaAsignacion.asignacion_fecha_hasta}
-              onChange={(e) =>
-                setNuevaAsignacion({
-                  ...nuevaAsignacion,
-                  asignacion_fecha_hasta: e.target.value,
-                })
-              }
-            />
+                  <input
+                    type="date"
+                    className="w-full border p-2 rounded"
+                    value={nuevaAsignacion.asignacion_fecha_desde}
+                    onChange={(e) =>
+                      setNuevaAsignacion({
+                        ...nuevaAsignacion,
+                        asignacion_fecha_desde: e.target.value,
+                      })
+                    }
+                    required
+                  />
+                  <input
+                    type="date"
+                    className="w-full border p-2 rounded"
+                    value={nuevaAsignacion.asignacion_fecha_hasta}
+                    onChange={(e) =>
+                      setNuevaAsignacion({
+                        ...nuevaAsignacion,
+                        asignacion_fecha_hasta: e.target.value,
+                      })
+                    }
+                    required
+                  />
 
-            <textarea
-              className="w-full border p-2 rounded"
-              placeholder="Comentario"
-              value={nuevaAsignacion.asignacion_comentario}
-              onChange={(e) =>
-                setNuevaAsignacion({
-                  ...nuevaAsignacion,
-                  asignacion_comentario: e.target.value,
-                })
-              }
-            />
-         
+                  <textarea
+                    className="w-full border p-2 rounded"
+                    placeholder="Comentario"
+                    value={nuevaAsignacion.asignacion_comentario}
+                    onChange={(e) =>
+                      setNuevaAsignacion({
+                        ...nuevaAsignacion,
+                        asignacion_comentario: e.target.value,
+                      })
+                    }
+                  />
         </ModalAddItem>
       </div>
+{/* FIN DE AGREGAR */}
+
+{/* INICIO DETALLE */}
       {detalleAsignacion && (
           <ModalDetalleAsignacion
             asignacion={detalleAsignacion}
             onClose={() => setDetalleAsignacion(null)}
           />
         )}
-
+{/* FIN DETALLE */}
 
     </div>
   )

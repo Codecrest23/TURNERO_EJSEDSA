@@ -30,6 +30,7 @@ export function useTurnos() {
         turno_comentarios,
         turno_color,
         turno_motivo,
+        turno_id_localidad,
         turnos_horarios!turnos_horarios_id_turno_fkey (
           id_turno_horario,
           turno_horario_tipo,
