@@ -8,14 +8,18 @@ import ModalAddItem from "../components/ui/ModalAddItem"
 import Modal from "../components/ui/Modal"
 import ModalDetalleAsignacion from "../components/ui/ModalDetalleAsignacion"
 import { Title, Subtitle } from "../components/ui/Typography"
-import { UserPlus } from "lucide-react"
+import { CalendarClock } from "lucide-react"
 import Select from "react-select"
 import { useState, useEffect } from "react"
 import ButtonSmall from "../components/ui/ButtonSmall"
+import FiltroEmpleado from "../components/ui/Filtros/FiltroEmpleado"
+import FiltroLocalidad from "../components/ui/Filtros/FiltroLocalidad"
+import FiltroTurno from "../components/ui/Filtros/FiltroTurno"
+import Toggle from "../components/ui/Toggle"
 
 export default function AsignacionTurnos() {
-  const { asignaciones, loading, fetchAsignaciones, agregarAsignacion, eliminarAsignacion } =
-    useAsignaciones()
+  const { asignaciones, loading, fetchAsignaciones, agregarAsignacion, eliminarAsignacion } =useAsignaciones()
+  const [asignacionEliminar, setAsignacionEliminar] = useState(null)
   const { empleados } = useEmpleados()
   const { turnos } = useTurnos()
   const { localidades } = useLocalidades()
@@ -41,9 +45,13 @@ const limpiarFormulario = () => {
     asignacion_comentario: "",
   });
 
-  setMotivoTurnoInfo("");   // 🔥 limpia el input informativo
+  setMotivoTurnoInfo("");  
 };
 
+const [filtroEmpleados, setFiltroEmpleados] = useState([]);
+const [filtroLocalidades, setFiltroLocalidades] = useState([]);
+const [filtroTurnos, setFiltroTurnos] = useState([]);
+const [esLaboral, setEsLaboral] = useState(true); // true = laboral
 
 //agrgar para que automaticamente se coloque la localidad 
 useEffect(() => {
@@ -82,18 +90,6 @@ useEffect(() => {
     limpiarFormulario();
   }
 
-// console.log(" LOCALIDAD SELECCIONADA:", nuevaAsignacion.asignacion_localidad_id);
-// console.log("typeof:", typeof nuevaAsignacion.asignacion_localidad_id);
-
-// console.log(" Turnos completos:");
-// turnos.forEach(t =>
-//   console.log(
-//     "id_turno:", t.id_turno,
-//     "| nombre:", t.turno_nombre,
-//     "| turno_id_localidad:", t.turno_id_localidad,
-//     "| typeof:", typeof t.turno_id_localidad
-//   )
-// );
 
 // OPCIONES AGRUPADAS PARA EL SELECT DE TURNOS
 const locID = Number(nuevaAsignacion.asignacion_localidad_id);
@@ -123,17 +119,56 @@ const opcionesTurnos = [
     : [])
 ];
 
+
+//  FILTRO VISUAL
+const filteredAsignaciones = asignaciones.filter((a) => {
+const empOk =
+  filtroEmpleados.length === 0 ||
+  filtroEmpleados.some((f) => Number(f.value) === Number(a.asignacion_empleado_id));
+
+const locOk =
+  filtroLocalidades.length === 0 ||
+  filtroLocalidades.some((f) => Number(f.value) === Number(a.asignacion_localidad_id));
+
+const turnoOk =
+  filtroTurnos.length === 0 ||
+  filtroTurnos.some((f) => Number(f.value) === Number(a.asignacion_turno_id));
+  return empOk && locOk && turnoOk;
+  
+});
+
 // OPCIONES AGRUPADAS PARA EL SELECT DE TURNOS
 
   return (
     <div className="max-w-7xl mx-auto space-y-8">
       <Title>
         <div className="flex items-center gap-2">
-          <UserPlus className="w-6 h-6 text-gray-700" />
+          <CalendarClock className="w-6 h-6 text-gray-700" />
           Asignación de Turnos
         </div>
       </Title>
-      <Subtitle>Asignar turnos a empleados</Subtitle>
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
+
+{/* INICIO DE FILTROS */}
+  <FiltroEmpleado
+    empleados={empleados}
+    value={filtroEmpleados}
+    onChange={setFiltroEmpleados}
+  />
+
+  <FiltroLocalidad
+    localidades={localidades}
+    value={filtroLocalidades}
+    onChange={setFiltroLocalidades}
+  />
+
+  <FiltroTurno
+    turnos={turnos}
+    value={filtroTurnos}
+    onChange={setFiltroTurnos}
+  />
+</div>
+
 {/* INICIO DE TABLA */}
       <Table
         headers={[
@@ -147,7 +182,7 @@ const opcionesTurnos = [
           "Detalles"
         ]}
       >
-        {asignaciones.map((a) => (
+        {filteredAsignaciones.map((a) => (
           <tr
             key={a.id_asignacion}
             onClick={() =>
@@ -192,16 +227,14 @@ const opcionesTurnos = [
           </tr>
         ))}
       </Table>
-{/* FIN DE TABLA */}
-      {/* Botones */}
+
+{/* INICIO BOTONES */}
       <div className="flex justify-end gap-2 mt-4">
         <Button
           variant="danger"
-          onClick={() => {
-            if (asignacionSeleccionada)
-              eliminarAsignacion(asignacionSeleccionada.id_asignacion)
-          }}
+          onClick={() => setAsignacionEliminar(asignacionSeleccionada)}
           disabled={!asignacionSeleccionada}
+          className={!asignacionSeleccionada ? "opacity-50 cursor-not-allowed" : ""}
         >
           Eliminar
         </Button>
@@ -212,6 +245,12 @@ const opcionesTurnos = [
                 onSubmit={handleAgregar}
                 onClose={limpiarFormulario}
               >
+                <Toggle
+                  label="Es laboral"
+                  checked={esLaboral}
+                  onChange={setEsLaboral}
+                />
+
                   <Select
                     options={empleados.map(e => ({
                       value: e.id_empleado,
@@ -253,36 +292,6 @@ const opcionesTurnos = [
                     required
 
                   />
-
-                  {/* <Select
-                    className="w-full"
-                    placeholder="Seleccionar Turno"
-                    isSearchable={true}
-                    value={
-                      turnos
-                        .map(t => ({
-                          value: t.id_turno,
-                          label: t.turno_nombre
-                        }))
-                        .find(opt => opt.value == nuevaAsignacion.asignacion_turno_id) || null
-                    }
-                    onChange={(opt) => {
-                      const turno = turnos.find(t => t.id_turno == opt?.value);
-
-                      // setear el turno elegido (esto ya lo tenías)
-                      setNuevaAsignacion({
-                        ...nuevaAsignacion,
-                        asignacion_turno_id: opt?.value,
-                      });
-
-                      // setear motivo solo para mostrar
-                      setMotivoTurnoInfo(turno?.turno_motivo || "");
-                    }}
-                    options={turnos.map(t => ({
-                      value: t.id_turno,
-                      label: t.turno_nombre
-                    }))}
-                  /> */}
                 <Select
                   className="w-full"
                   placeholder="Seleccionar Turno"
@@ -356,8 +365,6 @@ const opcionesTurnos = [
                   />
         </ModalAddItem>
       </div>
-{/* FIN DE AGREGAR */}
-
 {/* INICIO DETALLE */}
       {detalleAsignacion && (
           <ModalDetalleAsignacion
@@ -365,7 +372,34 @@ const opcionesTurnos = [
             onClose={() => setDetalleAsignacion(null)}
           />
         )}
-{/* FIN DETALLE */}
+  {/*INCIO ELIMINAR */}
+      {asignacionEliminar && (  
+         <>
+    {console.log("OBJETO PARA ELIMINAR:", asignacionEliminar)}
+        <Modal title="Eliminar Asignacion" onClose={() => setAsignacionEliminar(null)}>
+          <p className="mb-6 text-center">
+            ¿Seguro que deseas eliminar la asignación de {" "}
+            <b>{asignacionEliminar?.empleados?.empleado_nombre_apellido}</b>?<br />
+            Turno: <b>{asignacionEliminar?.turnos?.turno_nombre}</b><br />
+            Desde: <b>{new Date(asignacionEliminar?.asignacion_fecha_desde).toLocaleDateString("es-AR")}</b><br />
+            Hasta: <b>{new Date(asignacionEliminar?.asignacion_fecha_hasta).toLocaleDateString("es-AR")}</b>
+          </p>
+          <div className="flex justify-center gap-2">
+            <Button variant="gray" onClick={() => setAsignacionEliminar(null)}>
+              Cancelar
+            </Button>
+            <Button
+              variant="danger"
+              onClick={() => {
+                eliminarAsignacion(asignacionEliminar.id_asignacion)
+                setAsignacionEliminar(null)
+              }}
+            >
+              Sí, eliminar
+            </Button>
+          </div>
+        </Modal>  </>
+      )}
 
     </div>
   )

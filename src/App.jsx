@@ -10,7 +10,7 @@ import FuncionesSectores from "./pages/FuncionesSectores"
 import Layout from "./Layout"
 import ProtectedRoute from "./components/ProtectedRoute"
 import Asignacion from "./pages/AsignacionTurnos"
-
+import Informe from "./pages/ReporteHistorico"
 
 function App() {
   return (
@@ -28,6 +28,7 @@ function App() {
           <Route path="/planificacion" element={<ProtectedRoute><Planificacion /></ProtectedRoute>} />
           <Route path="/usuarios" element={<ProtectedRoute><Usuarios/></ProtectedRoute>} />
           <Route path="/asignacion" element={<ProtectedRoute><Asignacion/></ProtectedRoute>} />
+          <Route path="/informe" element={<ProtectedRoute><Informe/></ProtectedRoute>} />
           {/* <Route path="/login" element={<Login />} /> */}
         </Route>
       </Routes>

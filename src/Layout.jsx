@@ -1,6 +1,6 @@
 import { Outlet, Link,useNavigate  } from "react-router-dom"
 import { useState } from "react"
-import { Menu, X, User, Users,Calendar, CalendarClock, Map, Layers, LogIn,Clock9, Clock,LogOut,BriefcaseBusiness, IdCardLanyard,UserPlus} from "lucide-react"
+import { Menu, X, Users,Calendar, CalendarClock, Map, Layers,Clock9, Clock,LogOut,BriefcaseBusiness, IdCardLanyard,UserPlus,SquareStack} from "lucide-react"
 import { supabase } from "./lib/supabaseClient"
 import { useAuth } from "./context/AuthContext"
 
@@ -44,10 +44,10 @@ export default function Layout() {
         {/* Links */}
         <nav className="flex flex-col gap-2 p-2">
           <SidebarLink to="/planificacion" icon={<Calendar size={20} />} open={open} label="Planificación" />
-          {/* <SidebarLink to="/" icon={<Home size={20} />} open={open} label="Inicio" /> */}
+          {(rol === "Admin" || rol === "Supervisor") && (<SidebarLink to="/informe" icon={<SquareStack size={20} />} open={open} label="Informe Historico" />)}
           {(rol === "Admin" || rol === "Supervisor") && (<SidebarLink to="/asignacion" icon={<CalendarClock size={20} />} open={open} label="Asignacion de Turnos" />)}
-          {(rol === "Admin" || rol === "Supervisor") && (<SidebarLink to="/turnos" icon={<Clock size={20} />} open={open} label="Turnos" />)}
           {(rol === "Admin" || rol === "Supervisor") && (<SidebarLink to="/empleados" icon={<IdCardLanyard size={20} />} open={open} label="Empleados" />)}
+          {(rol === "Admin" || rol === "Supervisor") && (<SidebarLink to="/turnos" icon={<Clock size={20} />} open={open} label="Turnos" />)}
           {(rol === "Admin" || rol === "Supervisor") && (<SidebarLink to="/funciones-sectores" icon={<BriefcaseBusiness size={20} />} open={open} label="Funciones y Sectores" />)}
           {rol === "Admin" && (<SidebarLink to="/localidades" icon={<Map size={20} />} open={open} label="Localidades" />)}
           {rol === "Admin" && (<SidebarLink to="/zonas" icon={<Layers size={20} />} open={open} label="Zonas" />)}
@@ -66,6 +66,9 @@ export default function Layout() {
         <div className="mt-auto p-4 border-t border-gray-700 text-xs text-gray-300">
         <p className="font-semibold text-white">
           {user.user_metadata?.full_name || "Usuario"}
+        </p>
+        <p className="font-semibold text-white">
+          {rol}
         </p>
         <p className="truncate text-gray-400">{user.email}</p>
         </div>)}

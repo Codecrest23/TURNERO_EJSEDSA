@@ -21,6 +21,9 @@ export function useAsignaciones() {
         asignacion_fecha_hasta,
         asignacion_comentario,
         asignacion_fecha_Hora_modificacion,
+        asignacion_turno_id,
+        asignacion_localidad_id,
+        asignacion_empleado_id,
         empleados ( id_empleado, empleado_nombre_apellido ),
         turnos ( id_turno, turno_nombre, turno_color, turno_motivo),
         localidades ( id_localidad, localidad_nombre )

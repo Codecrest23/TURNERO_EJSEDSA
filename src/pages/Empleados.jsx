@@ -11,6 +11,7 @@ import ModalAddItem from "../components/ui/ModalAddItem"
 import Modal from "../components/ui/Modal"
 import { Title, Subtitle } from "../components/ui/Typography"
 import { IdCardLanyard, CirclePlus } from "lucide-react"
+import SelectTurnosPorLocalidad from "../components/ui/SelectTurnosPorLocalidad";
 
 export default function Empleados() {
   const {
@@ -28,16 +29,45 @@ export default function Empleados() {
 
   const [nuevoEmpleado, setNuevoEmpleado] = useState({
     empleado_nombre_apellido: "",
-    empleado_id_funcion: "",
-    empleado_id_sector: "",
-    empleado_id_localidad: "",
-    empleado_id_turno: "",
+    empleado_id_funcion: null,
+    empleado_id_sector: null,
+    empleado_id_localidad: null,
+    empleado_id_turno: null,
     empleado_color: "",
   })
 
   const [empleadoSeleccionado, setEmpleadoSeleccionado] = useState(null)
   const [empleadoEditando, setEmpleadoEditando] = useState(null)
   const [empleadoEliminar, setEmpleadoEliminar] = useState(null)
+  
+  // OPCIONES AGRUPADAS PARA EL SELECT DE TURNOS
+  const locID = Number(nuevoEmpleado.empleado_id_localidad);
+  //console.log("🔎 locID normalizado:", locID, "typeof:", typeof locID);
+  // Turnos asociados
+  const turnosLocalidad = turnos
+    .filter(t => Number(t.turno_id_localidad) === locID)
+    .map(t => ({
+      label: t.turno_nombre , //+ " 🟩"
+      value: t.id_turno
+    }));
+  //console.log("🎯 Turnos que matchean:", turnosLocalidad);
+  // Otros turnos
+  const otrosTurnos = turnos
+    .filter(t => Number(t.turno_id_localidad) !== locID)
+    .map(t => ({
+      label: t.turno_nombre,
+      value: t.id_turno
+    }));
+
+  const opcionesTurnos = [
+    ...(turnosLocalidad.length > 0
+      ? [{ label: "Turnos de esta Localidad", options: turnosLocalidad }]
+      : []),
+    ...(otrosTurnos.length > 0
+      ? [{ label: "Otros Turnos", options: otrosTurnos }]
+      : [])
+  ];
+
 
   if (loading) return <p>Cargando...</p>
   // Agregar
@@ -46,10 +76,10 @@ export default function Empleados() {
     await agregarEmpleado(nuevoEmpleado)
     setNuevoEmpleado({
       empleado_nombre_apellido: "",
-      empleado_id_funcion: "",
-      empleado_id_sector: "",
-      empleado_id_localidad: "",
-      empleado_id_turno: "",
+      empleado_id_funcion: null,
+      empleado_id_sector: null,
+      empleado_id_localidad: null,
+      empleado_id_turno: null,
       empleado_color: "",
     })
   }
@@ -224,7 +254,7 @@ const limpiarFormulario = () => {
             ))}
           </select>
 
-          <select
+          {/* <select
             value={nuevoEmpleado.empleado_id_turno}
             onChange={(e) =>
               setNuevoEmpleado({
@@ -240,7 +270,18 @@ const limpiarFormulario = () => {
                 {t.turno_nombre}
               </option>
             ))}
-          </select>
+          </select> */}
+          <SelectTurnosPorLocalidad
+          turnos={turnos}
+          localidadId={nuevoEmpleado.empleado_id_localidad}
+          value={nuevoEmpleado.empleado_id_turno}
+          onChange={(value) =>
+            setNuevoEmpleado({
+              ...nuevoEmpleado,
+              empleado_id_turno: value,
+            })
+          }
+        />
         </ModalAddItem>
       </div>
 
@@ -299,26 +340,6 @@ const limpiarFormulario = () => {
                 </option>
               ))}
             </select>
-
-            {/* Turno */}
-            <select
-              value={empleadoEditando.empleado_id_turno || ""}
-              onChange={(e) =>
-                setEmpleadoEditando({
-                  ...empleadoEditando,
-                  empleado_id_turno: e.target.value,
-                })
-              }
-              className="border rounded px-3 py-2 w-full"
-            >
-              <option value="">Seleccionar turno</option>
-              {turnos.map((t) => (
-                <option key={t.id_turno} value={t.id_turno}>
-                  {t.turno_nombre}
-                </option>
-              ))}
-            </select>
-
             {/* Localidad */}
             <select
               value={empleadoEditando.empleado_id_localidad || ""}
@@ -337,6 +358,18 @@ const limpiarFormulario = () => {
                 </option>
               ))}
             </select>
+            {/* Turno */}
+            <SelectTurnosPorLocalidad
+              turnos={turnos}
+              localidadId={empleadoEditando.empleado_id_localidad}
+              value={empleadoEditando.empleado_id_turno}
+              onChange={(value) =>
+                setEmpleadoEditando({
+                  ...empleadoEditando,
+                  empleado_id_turno: value,
+                })
+              }
+            />
             <div className="flex justify-end gap-2">
               <Button variant="gray" onClick={() => setEmpleadoEditando(null)}>
                 Cancelar

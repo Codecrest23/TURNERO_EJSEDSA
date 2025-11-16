@@ -272,14 +272,14 @@ if (TurnoEditando.tieneHorarios) {
           Eliminar
         </Button>
 
-<ModalAddItem title="Agregar Turno" buttonLabel="Agregar" onSubmit={handleAgregar}>
+<ModalAddItem title="Agregar Turno/Licencia" buttonLabel="Agregar" onSubmit={handleAgregar}>
       <TurnoForm turno={nuevoTurno} setTurno={setNuevoTurno} localidades={localidades} />
     </ModalAddItem>
         
       </div>
 
       {/* Modal editar */}
-      {TurnoEditando && (<Modal title="Editar Turno" onClose={() => setTurnoEditando(null)}>
+      {TurnoEditando && (<Modal title="Editar Turno/Licencia" onClose={() => setTurnoEditando(null)}>
       <form onSubmit={handleEditarSubmit} className="space-y-4 max-h-[80vh] overflow-y-auto pr-2">
         <TurnoForm turno={TurnoEditando} setTurno={setTurnoEditando} localidades={localidades} />
         <div className="flex justify-end gap-2 pt-2 sticky bottom-0 bg-white border-t">
