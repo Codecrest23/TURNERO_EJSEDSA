@@ -35,23 +35,24 @@ export default function AsignacionTurnos() {
     asignacion_comentario: "",
   })
   const [asignacionSeleccionada, setAsignacionSeleccionada] = useState(null)
-const limpiarFormulario = () => {
-  setNuevaAsignacion({
-    asignacion_empleado_id: "",
-    asignacion_localidad_id: "",
-    asignacion_turno_id: "",
-    asignacion_fecha_desde: "",
-    asignacion_fecha_hasta: "",
-    asignacion_comentario: "",
-  });
+  const [esLaboral, setEsLaboral] = useState(true); // true = laboral
+  const limpiarFormulario = () => {
+    setNuevaAsignacion({
+      asignacion_empleado_id: "",
+      asignacion_localidad_id: "",
+      asignacion_turno_id: "",
+      asignacion_fecha_desde: "",
+      asignacion_fecha_hasta: "",
+      asignacion_comentario: "",
+      });
 
-  setMotivoTurnoInfo("");  
-};
+    setMotivoTurnoInfo("");  
+    setEsLaboral(true)
+  };
 
 const [filtroEmpleados, setFiltroEmpleados] = useState([]);
 const [filtroLocalidades, setFiltroLocalidades] = useState([]);
 const [filtroTurnos, setFiltroTurnos] = useState([]);
-const [esLaboral, setEsLaboral] = useState(true); // true = laboral
 
 //agrgar para que automaticamente se coloque la localidad 
 useEffect(() => {
@@ -92,33 +93,55 @@ useEffect(() => {
 
 
 // OPCIONES AGRUPADAS PARA EL SELECT DE TURNOS
+const turnosFiltrados = turnos.filter((t) => {
+  const coincideLaboral = esLaboral
+    ? t.turno_es_laboral === "Si"
+    : t.turno_es_laboral === "No";
+
+  return coincideLaboral;
+});
+
 const locID = Number(nuevaAsignacion.asignacion_localidad_id);
-//console.log("🔎 locID normalizado:", locID, "typeof:", typeof locID);
-// Turnos asociados
-const turnosLocalidad = turnos
-  .filter(t => Number(t.turno_id_localidad) === locID)
-  .map(t => ({
-    label: t.turno_nombre , //+ " 🟩"
-    value: t.id_turno
-  }));
-//console.log("🎯 Turnos que matchean:", turnosLocalidad);
-// Otros turnos
-const otrosTurnos = turnos
-  .filter(t => Number(t.turno_id_localidad) !== locID)
-  .map(t => ({
-    label: t.turno_nombre,
-    value: t.id_turno
-  }));
 
+// crudos
+const turnosLocalidad = turnosFiltrados.filter(
+  (t) => Number(t.turno_id_localidad) === locID
+);
+
+const otrosTurnos = turnosFiltrados.filter(
+  (t) => Number(t.turno_id_localidad) !== locID
+);
+
+// 🔹 opciones formateadas para react-select
+const turnosLocalidadOptions = turnosLocalidad.map((t) => ({
+  value: t.id_turno,
+  label: t.turno_nombre,
+}));
+
+const otrosTurnosOptions = otrosTurnos.map((t) => ({
+  value: t.id_turno,
+  label: t.turno_nombre,
+}));
+
+// 🔹 grupos
 const opcionesTurnos = [
-  ...(turnosLocalidad.length > 0
-    ? [{ label: "Turnos de esta Localidad", options: turnosLocalidad }]
+  ...(turnosLocalidadOptions.length > 0
+    ? [
+        {
+          label: "Turnos de esta Localidad",
+          options: turnosLocalidadOptions,
+        },
+      ]
     : []),
-  ...(otrosTurnos.length > 0
-    ? [{ label: "Otros Turnos", options: otrosTurnos }]
-    : [])
+  ...(otrosTurnosOptions.length > 0
+    ? [
+        {
+          label: "Otros Turnos",
+          options: otrosTurnosOptions,
+        },
+      ]
+    : []),
 ];
-
 
 //  FILTRO VISUAL
 const filteredAsignaciones = asignaciones.filter((a) => {
@@ -140,9 +163,9 @@ const turnoOk =
 // OPCIONES AGRUPADAS PARA EL SELECT DE TURNOS
 
   return (
-    <div className="max-w-7xl mx-auto space-y-8">
+    <div className="max-w-8xl mx-auto space-y-2">
       <Title>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-z">
           <CalendarClock className="w-6 h-6 text-gray-700" />
           Asignación de Turnos
         </div>
@@ -211,7 +234,7 @@ const turnoOk =
             </td>
             <td className="px-6 py-3">{a.localidades?.localidad_nombre}</td>
             <td className="px-6 py-3">{new Date(a.asignacion_fecha_desde).toLocaleDateString("es-AR")}</td>
-            <td className="px-6 py-3">{new Date(a.asignacion_fecha_desde).toLocaleDateString("es-AR")}</td>
+            <td className="px-6 py-3">{new Date(a.asignacion_fecha_hasta).toLocaleDateString("es-AR")}</td>
             <td className="px-6 py-3 max-w-xs"> <div className="line-clamp-2">{a.asignacion_comentario || "-"}</div></td>
             <td className="px-6 py-3 text-center">
               <ButtonSmall
@@ -292,30 +315,32 @@ const turnoOk =
                     required
 
                   />
-                <Select
-                  className="w-full"
-                  placeholder="Seleccionar Turno"
-                  isSearchable={true}
-                  value={
-                    turnos
-                      .map(t => ({
-                        value: t.id_turno,
-                        label: t.turno_nombre
-                      }))
-                      .find(opt => opt.value == nuevaAsignacion.asignacion_turno_id) || null
-                  }
-                  onChange={(opt) => {
-                    const turno = turnos.find(t => t.id_turno == opt?.value);
+              <Select
+                className="w-full"
+                placeholder="Seleccionar Turno"
+                isSearchable={true}
+                value={(() => {
+                  const allOptions = [...turnosLocalidadOptions, ...otrosTurnosOptions];
+                  return (
+                    allOptions.find(
+                      (opt) => opt.value == nuevaAsignacion.asignacion_turno_id
+                    ) || null
+                  );
+                })()}
+                onChange={(opt) => {
+                  const turno = turnos.find((t) => t.id_turno == opt?.value);
 
-                    setNuevaAsignacion({
-                      ...nuevaAsignacion,
-                      asignacion_turno_id: opt?.value,
-                    });
+                  setNuevaAsignacion({
+                    ...nuevaAsignacion,
+                    asignacion_turno_id: opt?.value || "",
+                  });
 
-                    setMotivoTurnoInfo(turno?.turno_motivo || "");
-                  }}
-                  options={opcionesTurnos}
-                />
+                  setMotivoTurnoInfo(turno?.turno_motivo || "");
+                }}
+                options={opcionesTurnos}
+              />
+
+
 
                   <label className="block text-sm font-medium text-gray-700 mt-2">
                     Motivo del turno

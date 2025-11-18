@@ -22,7 +22,7 @@ export default function Zonas() {
     e.preventDefault()
     if (!nuevaZona.zona_nombre.trim()) return
     await agregarZonas(nuevaZona)
-    setNuevaZona({ zona_nombre: "", zona_cantidad_localidades: "", zona_cantidad_empleados: "" })
+    setNuevaZona({ zona_nombre: "", zona_cantidad_localidades: null, zona_cantidad_empleados: "" })
   }
 
   // 🔹 Guardar edición
@@ -118,7 +118,7 @@ export default function Zonas() {
             <input
               type="number"
               value={zonaEditando.zona_cantidad_localidades}
-              onChange={(e) => setZonaEditando({ ...zonaEditando, zona_cantidad_localidades: e.target.value })}
+              onChange={(e) => setZonaEditando({ ...zonaEditando, zona_cantidad_localidades:e.target.value=== "" ? null : e.target.value,})}
               className="border w-full px-3 py-2 rounded"
             />
             <input

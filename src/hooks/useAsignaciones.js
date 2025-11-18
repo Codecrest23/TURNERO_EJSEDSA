@@ -25,7 +25,7 @@ export function useAsignaciones() {
         asignacion_localidad_id,
         asignacion_empleado_id,
         empleados ( id_empleado, empleado_nombre_apellido ),
-        turnos ( id_turno, turno_nombre, turno_color, turno_motivo),
+        turnos ( id_turno, turno_nombre, turno_color,turno_es_laboral, turno_motivo),
         localidades ( id_localidad, localidad_nombre )
       `)
       .order("id_asignacion", { ascending: true })

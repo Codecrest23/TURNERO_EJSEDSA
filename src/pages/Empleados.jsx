@@ -86,10 +86,10 @@ export default function Empleados() {
 const limpiarFormulario = () => {
   setNuevoEmpleado({
       empleado_nombre_apellido: "",
-      empleado_id_funcion: "",
-      empleado_id_sector: "",
-      empleado_id_localidad: "",
-      empleado_id_turno: "",
+      empleado_id_funcion: null,
+      empleado_id_sector: null,
+      empleado_id_localidad: null,
+      empleado_id_turno: null,
       empleado_color: "",
     })
 };
@@ -254,25 +254,8 @@ const limpiarFormulario = () => {
             ))}
           </select>
 
-          {/* <select
-            value={nuevoEmpleado.empleado_id_turno}
-            onChange={(e) =>
-              setNuevoEmpleado({
-                ...nuevoEmpleado,
-                empleado_id_turno: e.target.value,
-              })
-            }
-            className="border rounded px-3 py-2 w-full"
-          >
-            <option value="" >Seleccionar turno</option>
-            {turnos.map((t) => (
-              <option key={t.id_turno} value={t.id_turno}>
-                {t.turno_nombre}
-              </option>
-            ))}
-          </select> */}
           <SelectTurnosPorLocalidad
-          turnos={turnos}
+          turnos={turnos.filter(t => t.turno_es_laboral === "Si")}
           localidadId={nuevoEmpleado.empleado_id_localidad}
           value={nuevoEmpleado.empleado_id_turno}
           onChange={(value) =>

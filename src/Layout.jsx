@@ -3,7 +3,7 @@ import { useState } from "react"
 import { Menu, X, Users,Calendar, CalendarClock, Map, Layers,Clock9, Clock,LogOut,BriefcaseBusiness, IdCardLanyard,UserPlus,SquareStack} from "lucide-react"
 import { supabase } from "./lib/supabaseClient"
 import { useAuth } from "./context/AuthContext"
-
+import Modal from "./components/ui/Modal"
 export function IconAsignarTurno() {
   return (
   <div className="flex items-center justify-center relative">
@@ -22,6 +22,8 @@ export default function Layout() {
     await supabase.auth.signOut()
     navigate("/") // vuelve al login
   }
+  const [confirmLogout, setConfirmLogout] = useState(false)
+
  //Fin agregado para logOut
   return (
     <div className="flex h-screen">
@@ -53,15 +55,16 @@ export default function Layout() {
           {rol === "Admin" && (<SidebarLink to="/zonas" icon={<Layers size={20} />} open={open} label="Zonas" />)}
           {rol === "Admin" && (<SidebarLink to="/usuarios" icon={<Users size={20} />} open={open} label="Usuarios" />)}
           {/* <SidebarLink to="/login" icon={<LogIn size={20} />} open={open} label="Login" /> */}
-          <button
-            onClick={handleLogout}
+         <button
+            onClick={() => setConfirmLogout(true)}
             className="flex items-center gap-3 px-3 py-2 rounded hover:bg-gray-700 transition text-left w-full"
           >
             <LogOut size={20} />
             {open && <span>Cerrar sesión</span>}
           </button>
+
         </nav>
-{/* Usuario logueado (nombre y mail) */}
+    {/* Usuario logueado (nombre y mail) */}
         {user && (
         <div className="mt-auto p-4 border-t border-gray-700 text-xs text-gray-300">
         <p className="font-semibold text-white">
@@ -78,7 +81,37 @@ export default function Layout() {
       <main className="flex-1 bg-gray-100 p-8 overflow-y-auto min-h-full">
         <Outlet />
       </main>
+      {/* MODAL DE CONFIRMACIÓN DE LOGOUT */}
+      {confirmLogout && (
+        <Modal
+          title="Cerrar sesión"
+          onClose={() => setConfirmLogout(false)}
+        >
+          <p className="mb-6 text-center">
+            ¿Seguro que deseas cerrar sesión?
+          </p>
 
+          <div className="flex justify-center gap-2">
+            <button
+              className="px-4 py-2 rounded bg-gray-300 hover:bg-gray-400 transition"
+              onClick={() => setConfirmLogout(false)}
+            >
+              Cancelar
+            </button>
+
+            <button
+              className="px-4 py-2 rounded bg-red-600 text-white hover:bg-red-700 transition"
+              onClick={async () => {
+                await supabase.auth.signOut();
+                setConfirmLogout(false);
+                navigate("/");
+              }}
+            >
+              Sí, cerrar sesión
+            </button>
+          </div>
+        </Modal>
+      )}
     </div>
   )
 }
@@ -95,3 +128,4 @@ function SidebarLink({ to, icon, label, open }) {
     </Link>
   )
 }
+

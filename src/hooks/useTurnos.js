@@ -3,8 +3,8 @@ import { supabase } from "../lib/supabaseClient"
 
 export function useTurnos() {
   const [turnos, setTurnos] = useState([])
-  const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
+  const [loading, setLoading] = useState(false)
 
   // ────────────────────────────────
   // CARGA INICIAL
@@ -127,8 +127,8 @@ export function useTurnos() {
     const { error } = await supabase.from("turnos").delete().eq("id_turno", id_turno)
 
     if (error) {
-      console.error("Error al eliminar turno:", error.message)
-      setError(error)
+    console.error("Error al eliminar turno:", error.message);
+    return { error };   
     } else {
       setTurnos((prev) => prev.filter((t) => t.id_turno !== id_turno))
     }
@@ -181,6 +181,7 @@ export function useTurnos() {
 
     if (error) {
       console.error("Error al eliminar horario:", error.message)
+      return { error };
     } else {
       // Actualiza localmente el estado
       setTurnos((prev) =>
@@ -205,6 +206,7 @@ export function useTurnos() {
     agregarHorario,
     modificarHorario,
     eliminarHorario,
+    
   }
 }
 

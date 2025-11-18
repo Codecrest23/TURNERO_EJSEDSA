@@ -1,5 +1,10 @@
 import Toggle from "../ui/Toggle";
+import { ChromePicker } from "react-color";
+import { useState } from "react"
+
+
 export default function TurnoForm({ turno, setTurno, localidades }) {
+    const [mostrarPicker, setMostrarPicker] = useState(false);
   return (
     <>
       <input
@@ -107,19 +112,67 @@ export default function TurnoForm({ turno, setTurno, localidades }) {
       ></textarea>
 
       {/* Color */}
-      <div className="flex flex-col gap-1 mt-3">
+      {/* <div className="flex flex-col gap-1 mt-3">
         <label className="text-gray-700 font-medium">Color del turno</label>
         <div className="flex items-center gap-3">
-          <input
+          {/* <input
             type="color"
             value={turno.turno_color || "#000000"}
             onChange={(e) => setTurno({ ...turno, turno_color: e.target.value === "" ? "#FFFFFF" : e.target.value, })}
             className="w-10 h-10 border border-gray-300 cursor-pointer shadow-sm transition-transform hover:scale-105"
-          />
+          /> 
           <span className="text-gray-600 font-mono">{turno.turno_color}</span>
         </div>
-      </div>
+      </div> */}
       {/* Checkbox para habilitar horarios */}
+      
+{/* Color del turno */}
+<div className="flex flex-col gap-1 mt-3 relative">
+  <label className="text-gray-700 font-medium">Color del turno</label>
+
+  <div className="flex items-center gap-3">
+    {/* BOTÓN REDONDO */}
+    <div
+      onClick={() => setMostrarPicker(!mostrarPicker)}
+      className="w-10 h-10 rounded-full border border-gray-300 cursor-pointer shadow-sm hover:scale-105 transition"
+      style={{ backgroundColor: turno.turno_color || "#FFFFFF" }}
+      title="Elegir color"
+    ></div>
+
+    {/* MOSTRAR HEX AL LADO */}
+    <span className="text-gray-600 font-mono">
+      {turno.turno_color || "#FFFFFF"}
+    </span>
+  </div>
+
+  {/* OVERLAY PARA CERRAR – ahora VA ANTES y con z-index BAJO */}
+  {mostrarPicker && (
+    <>
+      {/*Overlay atrás (no tapa el picker) */}
+      <div
+        className="fixed inset-0 z-40"
+        onClick={() => setMostrarPicker(false)}
+      ></div>
+
+      {/* Picker arriba (z-50) */}
+      <div className="absolute z-50 mt-2 shadow-lg">
+        <div className="origin-top-left scale-[0.95]">
+          <ChromePicker
+            color={turno.turno_color || "#FFFFFF"}
+            disableAlpha
+            onChange={(c) =>
+              setTurno({
+                ...turno,
+                turno_color: c?.hex || "#FFFFFF",
+              })
+            }
+          />
+        </div>
+      </div>
+    </>
+ )}
+</div>
+
 <Toggle
   label="¿Tiene horarios?"
   checked={turno.tieneHorarios || false}

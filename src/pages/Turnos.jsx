@@ -11,6 +11,8 @@ import TurnoForm from "../components/ui/TurnoForm"
 import ButtonSmall from "../components/ui/ButtonSmall";
 import ModalDetalleTurno from "../components/ui/ModalDetalleTurno"
 import { supabase } from "../lib/supabaseClient";
+import ModalFKError from "../components/ui/ModalFKError";
+
 
 export default function Turnos() {
   const {
@@ -33,6 +35,7 @@ export default function Turnos() {
   const [TurnoSeleccionado, setTurnoSeleccionado] = useState(null)
   const { localidades } = useLocalidades()
   const [TurnoDetalle, setTurnoDetalle] = useState(null);
+  const [errorFK, setErrorFK] = useState(false);
 
 
   if (loading) return <p>Cargando...</p>
@@ -300,15 +303,24 @@ if (TurnoEditando.tieneHorarios) {
             <Button variant="gray" onClick={() => setTurnoEliminar(null)}>
               Cancelar
             </Button>
-            <Button
-              variant="danger"
-              onClick={() => {
-                eliminarTurno(TurnoEliminar.id_turno)
-                setTurnoEliminar(null)
-              }}
-            >
-              Sí, eliminar
-            </Button>
+<Button
+  variant="danger"
+  onClick={async () => {
+    const resultado = await eliminarTurno(TurnoEliminar.id_turno);
+
+    if (resultado?.error?.code === "23503") {
+      setErrorFK(true);       // 🔥 mostramos modal FK
+      setTurnoEliminar(null); // cerramos modal eliminar
+      return;
+    }
+
+    setTurnoEliminar(null); // si eliminó OK
+  }}
+>
+  Sí, eliminar
+</Button>
+
+
           </div>
         </Modal>
       )}
@@ -321,6 +333,10 @@ if (TurnoEditando.tieneHorarios) {
   />
 )}
 
+{/* 🛑 Modal de Error por FK */}
+{errorFK && (
+  <ModalFKError onClose={() => setErrorFK(false)} />
+)}
 
 
     </div>

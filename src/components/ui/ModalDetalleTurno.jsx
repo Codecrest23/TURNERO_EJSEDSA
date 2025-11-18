@@ -26,10 +26,10 @@ export default function ModalDetalleTurno({ turno, onClose }) {
           <Detail label="Localidad" value={localidades?.localidad_nombre || "Sin Localidad"} />
           <Detail label="Cantidad de días" value={turno_cantidad_dias ?? "-"} />
           <Detail label="Días de descanso" value={turno_cantidad_dias_descanso ?? "-"} />
-          <Detail
+          {/* <Detail
             label="Guardia Pasiva"
             value={turno_tiene_guardia_pasiva === 1 ? "Sí" : "No"}
-          />
+          /> */}
           <Detail label="Es laboral" value={turno_es_laboral || "-"} />
           <div className="flex flex-col gap-2">
             <span className="text-[15px] font-semibold text-gray-700">
