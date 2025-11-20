@@ -6,7 +6,7 @@ import ModalAddItem from "../components/ui/ModalAddItem"
 import Modal from "../components/ui/Modal"
 import { Title, Subtitle } from "../components/ui/Typography"
 import { Briefcase, Building2, CirclePlus } from "lucide-react"
-
+import ModalFKError from "../components/ui/ModalFKError"
 export default function FuncionesSectores() {
   const {
     funciones,
@@ -25,7 +25,7 @@ export default function FuncionesSectores() {
   const [funcionSeleccionada, setFuncionSeleccionada] = useState(null)
   const [funcionEditando, setFuncionEditando] = useState(null)
   const [funcionEliminar, setFuncionEliminar] = useState(null)
-
+  const [errorFK, setErrorFK] = useState(false);
   // SECTORES
   const [nuevoSector, setNuevoSector] = useState({ sector_empleado_nombre: "" })
   const [sectorSeleccionado, setSectorSeleccionado] = useState(null)
@@ -247,8 +247,13 @@ export default function FuncionesSectores() {
             </Button>
             <Button
               variant="danger"
-              onClick={() => {
-                eliminarFuncion(funcionEliminar.funcion_empleado_id)
+              onClick={async() => {
+                const resultado = await eliminarFuncion(funcionEliminar.funcion_empleado_id)
+                if (resultado?.error?.code === "23503"){
+                  setErrorFK(true);
+                  setFuncionEliminar(null);
+                  return;
+                }
                 setFuncionEliminar(null)
               }}
             >
@@ -297,8 +302,12 @@ export default function FuncionesSectores() {
             </Button>
             <Button
               variant="danger"
-              onClick={() => {
-                eliminarSector(sectorEliminar.id_sector_empleado)
+              onClick={ async() => {
+                const resultado =await  eliminarSector(sectorEliminar.id_sector_empleado)
+                if(resultado?.error?.code==="23503"){
+                  setErrorFK(true);
+                  setSectorEliminar (null)
+                }
                 setSectorEliminar(null)
               }}
             >
@@ -306,6 +315,10 @@ export default function FuncionesSectores() {
             </Button>
           </div>
         </Modal>
+      )}
+      {/* 🛑 Modal de Error por FK */}
+      {errorFK && (
+        <ModalFKError onClose={() => setErrorFK(false)} />
       )}
     </div>
   )

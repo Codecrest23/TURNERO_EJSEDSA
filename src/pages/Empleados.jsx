@@ -12,6 +12,7 @@ import Modal from "../components/ui/Modal"
 import { Title, Subtitle } from "../components/ui/Typography"
 import { IdCardLanyard, CirclePlus } from "lucide-react"
 import SelectTurnosPorLocalidad from "../components/ui/SelectTurnosPorLocalidad";
+import ModalFKError from "../components/ui/ModalFKError"
 
 export default function Empleados() {
   const {
@@ -26,6 +27,7 @@ export default function Empleados() {
   const { funciones } = useFunciones()
   const { sectores } = useSectores()
   const { turnos } = useTurnos()
+  const[errorFK,setErrorFK]=useState(false)
 
   const [nuevoEmpleado, setNuevoEmpleado] = useState({
     empleado_nombre_apellido: "",
@@ -378,8 +380,13 @@ const limpiarFormulario = () => {
             </Button>
             <Button
               variant="danger"
-              onClick={() => {
-                eliminarEmpleado(empleadoEliminar.id_empleado)
+              onClick={async () => {
+                const resultado=await eliminarEmpleado(empleadoEliminar.id_empleado)
+                if(resultado?.error?.code==="23503"){
+                  setErrorFK(true);
+                  setEmpleadoEliminar(null)
+                  return;
+                }
                 setEmpleadoEliminar(null)
               }}
             >
@@ -387,6 +394,9 @@ const limpiarFormulario = () => {
             </Button>
           </div>
         </Modal>
+      )}
+      {errorFK && (
+        <ModalFKError onClose={()=>setErrorFK(false)}/>
       )}
     </div>
   )

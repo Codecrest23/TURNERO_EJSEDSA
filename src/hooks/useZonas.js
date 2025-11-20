@@ -35,6 +35,7 @@ export function useZonas() {
 
     if (error) {
       console.error("Error al insertar la Zona:", error.message)
+      return { error };
     } else {
       setZonas((prev) => [...prev, ...data])
     }
@@ -49,6 +50,7 @@ export function useZonas() {
 
     if (error) {
       console.error("Error al modificar la Zona:", error.message)
+      return { error };
     } else {
       setZonas((prev) =>
         prev.map((z) => (z.id_zona === id_zona ? { ...z, ...data[0] } : z))

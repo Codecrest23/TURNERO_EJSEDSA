@@ -49,8 +49,10 @@ export function useFuncionesSectores() {
       .delete()
       .eq("funcion_empleado_id", id)
 
-    if (error) console.error("Error al eliminar función:", error.message)
-    else fetchFunciones()
+    if (error) {console.error("Error al eliminar función:", error.message)
+      return{error};
+    }
+    else {fetchFunciones()}
   }
 
   // 🧱 SECTORES -----------------------
@@ -90,8 +92,10 @@ export function useFuncionesSectores() {
       .delete()
       .eq("id_sector_empleado", id)
 
-    if (error) console.error("Error al eliminar sector:", error.message)
-    else fetchSectores()
+    if (error) {console.error("Error al eliminar sector:", error.message)
+      return { error };
+    }
+    else {fetchSectores()}
   }
 
   return {

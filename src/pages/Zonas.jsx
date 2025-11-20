@@ -8,6 +8,7 @@ import { Title, Subtitle } from "../components/ui/Typography"
 import ConfirmModal from "../components/ui/ConfirmModal"
 import {LayoutGrid,CirclePlus, PencilLine, Trash,CheckCircle2,ShieldCheck} from "lucide-react"
 import ModalFKError from "../components/ui/ModalFKError";
+import ModalPKError from "../components/ui/ModalPKError"
 
 export default function Zonas() {
   const { zonas, loading, agregarZonas, modificarZona, eliminarZona } = useZonas()
@@ -17,14 +18,23 @@ export default function Zonas() {
   const [confirmarEdicion, setConfirmarEdicion] = useState(false)
   const [ZonaSeleccionada, setZonaSeleccionada] = useState(null)
   const [errorFK, setErrorFK] = useState(false);
+  const [errorPK, setErrorPK] = useState(false);
+
   if (loading) return <p>Cargando...</p>
 
   // 🔹 Agregar zona
   const handleSubmit = async (e) => {
     e.preventDefault()
     if (!nuevaZona.zona_nombre.trim()) return
-    await agregarZonas(nuevaZona)
+    const resultado = await agregarZonas(nuevaZona);
+
+    if (resultado?.error?.code === "23505") {
+    setErrorPK(true);     // abre modal profesional
+    return false;         // evita que ModalAddItem cierre el modal
+  }
+    //await agregarZonas(nuevaZona)
     setNuevaZona({ zona_nombre: "", zona_cantidad_localidades: null, zona_cantidad_empleados: "" })
+     return true;
   }
 
   // 🔹 Guardar edición
@@ -176,7 +186,13 @@ export default function Zonas() {
           variant="warning"
           onCancel={() => setConfirmarEdicion(false)}
           onConfirm={async () => {
-        await modificarZona(zonaEditando.id_zona, zonaEditando)
+        const resultado= await modificarZona(zonaEditando.id_zona, zonaEditando)
+        // Detectar DUPLICADO (UNIQUE)
+      if (resultado?.error?.code === "23505") {
+        setErrorPK(true);         // mostrar modal PK
+        setConfirmarEdicion(false); // cerrar confirmación
+        return;                   // ⛔ NO cerrar el modal de edición
+      }
         setConfirmarEdicion(false)
         setZonaEditando(null)
       }}/>
@@ -184,6 +200,9 @@ export default function Zonas() {
       {/* 🛑 Modal de Error por FK */}
       {errorFK && (
         <ModalFKError onClose={() => setErrorFK(false)} />
+      )}
+      {errorPK && (
+        <ModalPKError onClose={() => setErrorPK(false)} />
       )}
 
     </div>

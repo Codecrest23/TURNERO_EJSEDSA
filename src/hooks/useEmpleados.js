@@ -119,6 +119,7 @@ async function modificarEmpleado(id, camposActualizados) {
 
     if (error) {
       console.error("Error al eliminar empleado:", error.message)
+      return { error };
     } else {
       setEmpleados((prev) => prev.filter((emp) => emp.id_empleado !== id))
     }

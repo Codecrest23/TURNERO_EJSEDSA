@@ -64,6 +64,7 @@ export function useSectores() {
 
     if (error) {
       console.error("Error al eliminar sector:", error.message)
+      return { error };
     } else {
       setSectores((prev) => prev.filter((s) => s.id_sector_empleado !== id))
     }
