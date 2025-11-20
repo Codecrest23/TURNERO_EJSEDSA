@@ -7,6 +7,7 @@ import AddItem from "../components/ui/ModalAddItem"
 import { Title, Subtitle } from "../components/ui/Typography"
 import ConfirmModal from "../components/ui/ConfirmModal"
 import {LayoutGrid,CirclePlus, PencilLine, Trash,CheckCircle2,ShieldCheck} from "lucide-react"
+import ModalFKError from "../components/ui/ModalFKError";
 
 export default function Zonas() {
   const { zonas, loading, agregarZonas, modificarZona, eliminarZona } = useZonas()
@@ -15,6 +16,7 @@ export default function Zonas() {
   const [zonaEliminar, setZonaEliminar] = useState(null)
   const [confirmarEdicion, setConfirmarEdicion] = useState(false)
   const [ZonaSeleccionada, setZonaSeleccionada] = useState(null)
+  const [errorFK, setErrorFK] = useState(false);
   if (loading) return <p>Cargando...</p>
 
   // 🔹 Agregar zona
@@ -151,10 +153,16 @@ export default function Zonas() {
             </Button>
             <Button
               variant="danger"
-              onClick={() => {
-                eliminarZona(zonaEliminar.id_zona)
-                setZonaEliminar(null)
-              }}
+              onClick={//() => {eliminarZona(zonaEliminar.id_zona)
+                async () => {
+                const resultado = await eliminarZona(zonaEliminar.id_zona);
+
+                if (resultado?.error?.code === "23503") {
+                  setErrorFK(true);       // 🔥 mostramos modal FK
+                  setZonaEliminar(null); // cerramos modal eliminar
+                  return;
+                }
+                setZonaEliminar(null)}}
             >
               Sí, eliminar
             </Button>
@@ -172,6 +180,10 @@ export default function Zonas() {
         setConfirmarEdicion(false)
         setZonaEditando(null)
       }}/>
+      )}
+      {/* 🛑 Modal de Error por FK */}
+      {errorFK && (
+        <ModalFKError onClose={() => setErrorFK(false)} />
       )}
 
     </div>

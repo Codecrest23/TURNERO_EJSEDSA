@@ -59,10 +59,11 @@ const handleAgregar = async (e) => {
   } else {
     turnoSinHorarios.turno_id_localidad = Number(turnoSinHorarios.turno_id_localidad);
   }
+
   // 2️⃣ Verificar si faltan horarios obligatorios
   if (tieneHorarios && turnos_horarios.length === 0) {
-    alert("⚠️ Debes agregar al menos un horario antes de guardar el turno.");
-    return;
+    alert("⚠️ Debes agregar al menos un horario antes de guardar el turnos.");
+    return false;
   }
 
 const horarios = nuevoTurno.tieneHorarios
@@ -143,13 +144,10 @@ if (TurnoEditando.tieneHorarios) {
       h.turno_horario_entrada &&
       h.turno_horario_salida
   );
-
-  // Si no hay horarios válidos, avisamos
-  if (horariosValidos.length === 0) {
-    alert("⚠️ Debes agregar al menos un horario válido antes de guardar.");
-    return;
+  if (horariosValidos && horariosValidos.length === 0) {
+    alert("⚠️ Debes agregar al menos un horario antes de guardar el turnos.");
+    return false;
   }
-
   // 🔹 Borrar horarios anteriores solo si hay nuevos para insertar
     if (horariosValidos.length > 0) {
       await supabase
@@ -337,7 +335,6 @@ if (TurnoEditando.tieneHorarios) {
 {errorFK && (
   <ModalFKError onClose={() => setErrorFK(false)} />
 )}
-
 
     </div>
   )

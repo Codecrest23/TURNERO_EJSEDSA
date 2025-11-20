@@ -8,7 +8,11 @@ export default function AddItem({ title = "Agregar", children, onSubmit, onClose
 
   const handleSubmit = async (e) => {
     e.preventDefault()
-    await onSubmit(e)
+    // await onSubmit(e)
+    const result = await onSubmit(e);
+
+    if (result === false) return;
+
     setOpen(false)
   }
 

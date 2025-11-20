@@ -65,6 +65,7 @@ export function useZonas() {
 
     if (error) {
       console.error("Error al eliminar la Zona:", error.message)
+      return { error };
     } else {
       setZonas((prev) => prev.filter((z) => z.id_zona !== id_zona))
     }

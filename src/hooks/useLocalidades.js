@@ -71,8 +71,9 @@ export function useLocalidades() {
       .delete()
       .eq("id_localidad", id_localidad)
 
-    if (error) console.error("Error al eliminar:", error.message)
-    else fetchLocalidades()
+    if (error) {console.error("Error al eliminar:", error.message)
+      return {error};
+    }else {fetchLocalidades()}
   }
 
   return {

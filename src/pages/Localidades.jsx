@@ -6,6 +6,7 @@ import ModalAddItem from "../components/ui/ModalAddItem"
 import Modal from "../components/ui/Modal"
 import { Title, Subtitle } from "../components/ui/Typography"
 import {Map, CirclePlus } from "lucide-react"
+import ModalFKError from "../components/ui/ModalFKError";
 
 export default function Localidades() {
   const {
@@ -21,7 +22,7 @@ export default function Localidades() {
   const [localidadEditando, setLocalidadEditando] = useState(null)
   const [localidadEliminar, setLocalidadEliminar] = useState(null)
   const [localidadSeleccionada, setLocalidadSeleccionada] = useState(null)
-
+  const [errorFK, setErrorFK] = useState(false);
   if (loading) return <p>Cargando...</p>
 
   //  Agregar
@@ -189,8 +190,13 @@ export default function Localidades() {
             </Button>
             <Button
               variant="danger"
-              onClick={() => {
-                eliminarLocalidad(localidadEliminar.id_localidad)
+              onClick={async() => {
+                const resultado = await eliminarLocalidad(localidadEliminar.id_localidad)
+                if (resultado?.error?.code==="23503")
+                  {setErrorFK(true)
+                  setLocalidadEliminar(null)
+                  return;
+                  }
                 setLocalidadEliminar(null)
               }}
             >
@@ -199,6 +205,11 @@ export default function Localidades() {
           </div>
         </Modal>
       )}
+        {/* 🛑 Modal de Error por FK */}
+      {errorFK && (
+              <ModalFKError onClose={() => setErrorFK(false)} />
+       )}
+      
     </div>
   )
 }
