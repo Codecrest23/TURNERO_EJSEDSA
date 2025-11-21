@@ -74,8 +74,8 @@ export function useTurnos() {
 
     if (turnoError) {
       console.error("Error al insertar turno:", turnoError.message)
-      setError(turnoError)
-      return
+      //setError(turnoError)
+       return { error: turnoError };
     }
 
     // 2. Si hay horarios, insertarlos
@@ -106,7 +106,8 @@ export function useTurnos() {
 
     if (error) {
       console.error("Error al modificar turno:", error.message)
-      setError(error)
+      //setError(error)
+      return{error}
     } //else {      fetchTurnos()    }
   }
 
@@ -126,7 +127,7 @@ export function useTurnos() {
 
     const { error } = await supabase.from("turnos").delete().eq("id_turno", id_turno)
 
-    if (error) {
+      if (error) {
     console.error("Error al eliminar turno:", error.message);
     return { error };   
     } else {

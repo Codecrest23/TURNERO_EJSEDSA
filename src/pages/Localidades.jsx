@@ -7,6 +7,7 @@ import Modal from "../components/ui/Modal"
 import { Title, Subtitle } from "../components/ui/Typography"
 import {Map, CirclePlus } from "lucide-react"
 import ModalFKError from "../components/ui/ModalFKError";
+import ModalPKError from "../components/ui/ModalPKError"
 
 export default function Localidades() {
   const {
@@ -23,22 +24,31 @@ export default function Localidades() {
   const [localidadEliminar, setLocalidadEliminar] = useState(null)
   const [localidadSeleccionada, setLocalidadSeleccionada] = useState(null)
   const [errorFK, setErrorFK] = useState(false);
+  const [errorPK, setErrorPK] = useState(false);
   if (loading) return <p>Cargando...</p>
 
   //  Agregar
   const handleAgregar = async (e) => {
     e.preventDefault()
-    await agregarLocalidad(nuevaLocalidad)
+    const resultado=await agregarLocalidad(nuevaLocalidad)
+    if (resultado?.error?.code === "23505") {
+    setErrorPK(true);       // Mostrar modal “Nombre duplicado”
+    return false;                 // NO cerrar modal de edición
+  }
     setNuevaLocalidad({ localidad_nombre: "", localidad_id_zona: "" })
   }
 
   //  Editar
   const handleEditarSubmit = async (e) => {
     e.preventDefault()
-    await modificarLocalidad(localidadEditando.id_localidad, {
+    const resultado=await modificarLocalidad(localidadEditando.id_localidad, {
       localidad_nombre: localidadEditando.localidad_nombre,
       localidad_id_zona: localidadEditando.localidad_id_zona,
     })
+    if (resultado?.error?.code === "23505") {
+    setErrorPK(true);       // Mostrar modal “Nombre duplicado”
+    return;                 // NO cerrar modal de edición
+  }
     setLocalidadEditando(null)
   }
 
@@ -205,11 +215,13 @@ export default function Localidades() {
           </div>
         </Modal>
       )}
-        {/* 🛑 Modal de Error por FK */}
+        {/* 🛑 Modal de Error por FK y PK*/}
       {errorFK && (
               <ModalFKError onClose={() => setErrorFK(false)} />
        )}
-      
+      {errorPK && (
+              <ModalPKError onClose={() => setErrorPK(false)} />
+            )}
     </div>
   )
 }

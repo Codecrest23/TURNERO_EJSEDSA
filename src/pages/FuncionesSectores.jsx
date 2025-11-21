@@ -7,6 +7,8 @@ import Modal from "../components/ui/Modal"
 import { Title, Subtitle } from "../components/ui/Typography"
 import { Briefcase, Building2, CirclePlus } from "lucide-react"
 import ModalFKError from "../components/ui/ModalFKError"
+import ModalPKError from "../components/ui/ModalPKError"
+
 export default function FuncionesSectores() {
   const {
     funciones,
@@ -25,7 +27,9 @@ export default function FuncionesSectores() {
   const [funcionSeleccionada, setFuncionSeleccionada] = useState(null)
   const [funcionEditando, setFuncionEditando] = useState(null)
   const [funcionEliminar, setFuncionEliminar] = useState(null)
+
   const [errorFK, setErrorFK] = useState(false);
+  const [errorPK, setErrorPK] = useState(false);
   // SECTORES
   const [nuevoSector, setNuevoSector] = useState({ sector_empleado_nombre: "" })
   const [sectorSeleccionado, setSectorSeleccionado] = useState(null)
@@ -34,33 +38,49 @@ export default function FuncionesSectores() {
 
   if (loading) return <p>Cargando...</p>
 
-  // 🧱 MANEJO FUNCIONES
+  // MANEJO FUNCIONES
   const handleAgregarFuncion = async (e) => {
     e.preventDefault()
-    await agregarFuncion(nuevaFuncion)
+    const resultado= await agregarFuncion(nuevaFuncion)
+     if (resultado?.error?.code === "23505") {
+    setErrorPK(true);       // Mostrar modal “Nombre duplicado”
+    return false;                 // NO cerrar modal de edición
+  }
     setNuevaFuncion({ funcion_empleado_nombre: "" })
   }
 
   const handleEditarFuncion = async (e) => {
     e.preventDefault()
-    await modificarFuncion(funcionEditando.funcion_empleado_id, {
+    const resultado = await modificarFuncion(funcionEditando.funcion_empleado_id, {
       funcion_empleado_nombre: funcionEditando.funcion_empleado_nombre,
     })
+    if (resultado?.error?.code === "23505") {
+    setErrorPK(true);       // Mostrar modal “Nombre duplicado”
+    return;                 // NO cerrar modal de edición
+  }
     setFuncionEditando(null)
   }
 
   // 🧱 MANEJO SECTORES
   const handleAgregarSector = async (e) => {
     e.preventDefault()
-    await agregarSector(nuevoSector)
+    const resultado= await agregarSector(nuevoSector)
+    if (resultado?.error?.code === "23505") {
+    setErrorPK(true);       // Mostrar modal “Nombre duplicado”
+    return false;                 // NO cerrar modal de edición
+  }
     setNuevoSector({ sector_empleado_nombre: "" })
   }
 
   const handleEditarSector = async (e) => {
     e.preventDefault()
-    await modificarSector(sectorEditando.id_sector_empleado, {
+    const resultado= await modificarSector(sectorEditando.id_sector_empleado, {
       sector_empleado_nombre: sectorEditando.sector_empleado_nombre,
     })
+    if (resultado?.error?.code === "23505") {
+    setErrorPK(true);       // Mostrar modal “Nombre duplicado”
+    return;                 // NO cerrar modal de edición
+  }
     setSectorEditando(null)
   }
 
@@ -316,10 +336,13 @@ export default function FuncionesSectores() {
           </div>
         </Modal>
       )}
-      {/* 🛑 Modal de Error por FK */}
+      {/* 🛑 Modal de Error por FK y PK */}
       {errorFK && (
         <ModalFKError onClose={() => setErrorFK(false)} />
       )}
+      {errorPK && (
+              <ModalPKError onClose={() => setErrorPK(false)} />
+            )}
     </div>
   )
 }

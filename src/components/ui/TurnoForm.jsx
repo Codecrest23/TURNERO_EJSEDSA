@@ -53,6 +53,7 @@ export default function TurnoForm({ turno, setTurno, localidades }) {
       {/* Cantidad de días */}
       <input
         type="number"
+        min="0"
         placeholder="Cantidad de Días"
         value={turno.turno_cantidad_dias || ""}
         onChange={(e) => setTurno({ ...turno, turno_cantidad_dias: e.target.value=== "" ? null : e.target.value, })}
@@ -62,6 +63,7 @@ export default function TurnoForm({ turno, setTurno, localidades }) {
       {/* Días de descanso */}
       <input
         type="number"
+        min="0"
         placeholder="Días de descanso"
         value={turno.turno_cantidad_dias_descanso || ""}
         onChange={(e) => setTurno({ ...turno, turno_cantidad_dias_descanso: e.target.value=== "" ? null : e.target.value, })}

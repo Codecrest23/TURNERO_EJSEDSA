@@ -102,9 +102,10 @@ export default function Zonas() {
           />
           <input
             type="number"
+            min="0"
             placeholder="Cant. Localidades"
             value={nuevaZona.zona_cantidad_localidades}
-            onChange={(e) => setNuevaZona({ ...nuevaZona, zona_cantidad_localidades: e.target.value })}
+            onChange={(e) => setNuevaZona({ ...nuevaZona, zona_cantidad_localidades: e.target.value === "" ? null : e.target.value })}
             className="border rounded px-3 py-2 w-full"
           />
           <input
@@ -129,6 +130,7 @@ export default function Zonas() {
             />
             <input
               type="number"
+              min="0"
               value={zonaEditando.zona_cantidad_localidades}
               onChange={(e) => setZonaEditando({ ...zonaEditando, zona_cantidad_localidades:e.target.value=== "" ? null : e.target.value,})}
               className="border w-full px-3 py-2 rounded"

@@ -50,6 +50,7 @@ export function useLocalidades() {
 
     if (error) {
       console.error("Error al insertar la Localidad:", error.message)
+      return{error};
     } else {
       setLocalidades((prev) => [...prev, ...data])
     }
@@ -61,7 +62,9 @@ export function useLocalidades() {
       .update(dataEditada)
       .eq("id_localidad", id_localidad)
 
-    if (error) console.error("Error al modificar:", error.message)
+    if (error) {console.error("Error al modificar:", error.message)
+      return{error};
+    }
     else fetchLocalidades()
   }
 

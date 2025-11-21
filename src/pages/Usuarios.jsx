@@ -6,11 +6,13 @@ import ModalAddItem from "../components/ui/ModalAddItem"
 import Modal from "../components/ui/Modal"
 import { Title, Subtitle } from "../components/ui/Typography"
 import {Users, CirclePlus } from "lucide-react"
+import ModalPKError from "../components/ui/ModalPKError"
 
 export default function Usuarios() {
   const { users, loading, createUser, updateUser, deleteUser } = useUsers()
   const [form, setForm] = useState({ email: "", password: "", perfil_nombre: "", perfil_rol: "Empleado" })
   const [editing, setEditing] = useState(null)
+  const [errorPK, setErrorPK] = useState(false);
 
   if (loading) return <p>Cargando...</p>
 
@@ -117,7 +119,9 @@ export default function Usuarios() {
                  </form>
                </Modal>
              )}         
-
+            {errorPK && (
+                  <ModalPKError onClose={() => setErrorPK(false)} />
+              )}
     </div>
   )
 }

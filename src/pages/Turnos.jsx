@@ -12,7 +12,7 @@ import ButtonSmall from "../components/ui/ButtonSmall";
 import ModalDetalleTurno from "../components/ui/ModalDetalleTurno"
 import { supabase } from "../lib/supabaseClient";
 import ModalFKError from "../components/ui/ModalFKError";
-
+import ModalPKError from "../components/ui/ModalPKError"
 
 export default function Turnos() {
   const {
@@ -36,6 +36,7 @@ export default function Turnos() {
   const { localidades } = useLocalidades()
   const [TurnoDetalle, setTurnoDetalle] = useState(null);
   const [errorFK, setErrorFK] = useState(false);
+  const [errorPK, setErrorPK] = useState(false);
 
 
   if (loading) return <p>Cargando...</p>
@@ -73,7 +74,12 @@ const horarios = nuevoTurno.tieneHorarios
   : [];
 
   // 4) crear turno + (opcional) horarios
-  await agregarTurno(turnoSinHorarios, horarios); // ← el hook ya inserta y asocia por id_turno
+  const resultado = await agregarTurno(turnoSinHorarios, horarios); // ← el hook ya inserta y asocia por id_turno
+  // Validación de PK/UNIQUE (nombre duplicado)
+  if (resultado?.error?.code === "23505") {
+    setErrorPK(true); // mostrar modal profesional
+    return false;     // NO cerrar modal
+  }
   await fetchTurnos(); 
   // 5) reset
   setNuevoTurno({
@@ -122,7 +128,11 @@ try {
     TurnoEditando.id_turno,
     turnoActualizado
   );
-
+// 3️⃣ Error UNIQUE (nombre duplicado)
+  if (resultado?.error?.code === "23505") {
+    setErrorPK(true);       // Mostrar modal “Nombre duplicado”
+    return;                 // NO cerrar modal de edición
+  }
   if (resultado?.error) {
     console.error("❌ Error al modificar turno:", resultado.error);
     alert("Error al guardar el turno");
@@ -331,11 +341,13 @@ if (TurnoEditando.tieneHorarios) {
   />
 )}
 
-{/* 🛑 Modal de Error por FK */}
+{/* 🛑 Modal de Error por FK y PK*/}
 {errorFK && (
   <ModalFKError onClose={() => setErrorFK(false)} />
 )}
-
+{errorPK && (
+        <ModalPKError onClose={() => setErrorPK(false)} />
+      )}
     </div>
   )
 }

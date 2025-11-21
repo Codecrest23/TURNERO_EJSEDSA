@@ -29,7 +29,10 @@ export function useFuncionesSectores() {
       .insert([nuevaFuncion])
       .select()
 
-    if (error) console.error("Error al agregar función:", error.message)
+    if (error) {console.error("Error al agregar función:", error.message)
+      return {error};
+    }
+
     else setFunciones((prev) => [...prev, ...data])
   }
 
@@ -39,7 +42,9 @@ export function useFuncionesSectores() {
       .update(dataEditada)
       .eq("funcion_empleado_id", id)
 
-    if (error) console.error("Error al modificar función:", error.message)
+    if (error) {console.error("Error al modificar función:", error.message)
+      return{error};
+    }
     else fetchFunciones()
   }
 
@@ -72,7 +77,9 @@ export function useFuncionesSectores() {
       .insert([nuevoSector])
       .select()
 
-    if (error) console.error("Error al agregar sector:", error.message)
+    if (error) {console.error("Error al agregar sector:", error.message)
+      return{error};
+    }
     else setSectores((prev) => [...prev, ...data])
   }
 
@@ -82,7 +89,9 @@ export function useFuncionesSectores() {
       .update(dataEditada)
       .eq("id_sector_empleado", id)
 
-    if (error) console.error("Error al modificar sector:", error.message)
+    if (error) {console.error("Error al modificar sector:", error.message)
+      return{error};
+    }
     else fetchSectores()
   }
 

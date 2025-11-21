@@ -13,6 +13,7 @@ import { Title, Subtitle } from "../components/ui/Typography"
 import { IdCardLanyard, CirclePlus } from "lucide-react"
 import SelectTurnosPorLocalidad from "../components/ui/SelectTurnosPorLocalidad";
 import ModalFKError from "../components/ui/ModalFKError"
+import ModalPKError from "../components/ui/ModalPKError"
 
 export default function Empleados() {
   const {
@@ -28,6 +29,7 @@ export default function Empleados() {
   const { sectores } = useSectores()
   const { turnos } = useTurnos()
   const[errorFK,setErrorFK]=useState(false)
+  const [errorPK, setErrorPK] = useState(false);
 
   const [nuevoEmpleado, setNuevoEmpleado] = useState({
     empleado_nombre_apellido: "",
@@ -398,6 +400,9 @@ const limpiarFormulario = () => {
       {errorFK && (
         <ModalFKError onClose={()=>setErrorFK(false)}/>
       )}
+      {errorPK && (
+              <ModalPKError onClose={() => setErrorPK(false)} />
+            )}
     </div>
   )
 }
