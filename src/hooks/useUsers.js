@@ -44,6 +44,7 @@ async function fetchUsers() {
   async function createUser({ email, password, perfil_nombre, perfil_rol }) {
     const session = (await supabase.auth.getSession()).data.session
     const token = session?.access_token
+    try {
     const res = await fetch(
       `${import.meta.env.VITE_SUPABASE_FUNCTIONS_URL}/manage-user`,
       {
@@ -58,11 +59,20 @@ async function fetchUsers() {
         }),
       }
     )
+
     const out = await res.json()
-    if (!res.ok) throw new Error(out.error || "Error creando usuario")
+
+    if (!res.ok) {
+      return { error: out.error || "Error creando usuario" }
+    }
+
     await fetchUsers()
-    return out
+    return { data: out }
+
+  } catch (err) {
+    return { error: err.message }
   }
+}
 
   async function updateUser({ id, email, password, perfil_nombre, perfil_rol }) {
     const session = (await supabase.auth.getSession()).data.session
