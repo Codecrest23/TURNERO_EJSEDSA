@@ -4,7 +4,8 @@ export default function Button({ children, onClick, type = "button", variant = "
     primary: "bg-blue-600 text-white hover:bg-blue-700",
     danger: "bg-red-600 text-white hover:bg-red-700",
     warning: "bg-yellow-500 text-white hover:bg-yellow-600",
-    gray: "bg-gray-400 text-white hover:bg-gray-500"
+    gray: "bg-gray-400 text-white hover:bg-gray-500",
+    excel: "bg-green-700 text-white hover:bg-green-900"
   }
 
   return (

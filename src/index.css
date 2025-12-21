@@ -13,3 +13,11 @@
 .animate-scale-in {
   animation: scaleIn 0.2s ease-out;
 }
+/* ===== FIX react-datepicker + header sticky ===== */
+.react-datepicker-popper {
+  z-index: 9999 !important;
+}
+
+.react-datepicker__portal {
+  z-index: 9999 !important;
+}
