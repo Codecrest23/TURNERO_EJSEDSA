@@ -34,6 +34,9 @@ export default function AsignacionTurnos() {
 
   const [rangoFechas, setRangoFechas] = useState([null, null]); 
   const [fechaInicio, fechaFin] = rangoFechas;
+  
+  const [esExceso, setEsExceso] = useState(false);
+  const [esExcesoEdit, setEsExcesoEdit] = useState(false);
 
 // Formatea Date -> "YYYY-MM-DD" (sin problemas de zona horaria)
   const toYMD = (date) => {
@@ -51,6 +54,7 @@ export default function AsignacionTurnos() {
     asignacion_fecha_desde: "",
     asignacion_fecha_hasta: "",
     asignacion_comentario: "",
+    asignacion_estado:"",
   })
   const [asignacionSeleccionada, setAsignacionSeleccionada] = useState(null)
   const [esLaboral, setEsLaboral] = useState(true); // true = laboral
@@ -68,6 +72,7 @@ export default function AsignacionTurnos() {
     setMotivoTurnoInfo("");  
     setEsLaboral(true);
     setRangoFechas([null, null]);
+    setEsExceso(false);
   };
 
 const [filtroEmpleados, setFiltroEmpleados] = useState([]);
@@ -87,6 +92,8 @@ const [asignacionEdit, setAsignacionEdit] = useState({
   asignacion_fecha_hasta: "",
   asignacion_comentario: "",
 });
+  const turnoEdit = turnos.find((t) => Number(t.id_turno) === Number(asignacionEdit?.asignacion_turno_id));
+  const esLaboralEdit = turnoEdit?.turno_es_laboral === "Si";
 
 // RangePicker EDITAR
 const [rangoFechasEdit, setRangoFechasEdit] = useState([null, null]);
@@ -113,6 +120,7 @@ const abrirEditar = () => {
     asignacion_fecha_desde: (a.asignacion_fecha_desde || "").slice(0, 10),
     asignacion_fecha_hasta: (a.asignacion_fecha_hasta || "").slice(0, 10),
     asignacion_comentario: a.asignacion_comentario || "",
+    asignacion_estado:a.asignacion_estado || "",
   });
 
   setRangoFechasEdit([
@@ -121,6 +129,8 @@ const abrirEditar = () => {
   ]);
 
   setModalEditar(true);
+  setEsExcesoEdit(a.asignacion_estado === "Excedido");
+
 };
 
 //HANDLER DE EDITAR CON VALIDACIÓN
@@ -145,6 +155,7 @@ const handleEditar = async (e) => {
     asignacion_fecha_desde: asignacionEdit.asignacion_fecha_desde,
     asignacion_fecha_hasta: asignacionEdit.asignacion_fecha_hasta,
     asignacion_comentario: asignacionEdit.asignacion_comentario || null,
+    asignacion_estado:asignacionEdit.asignacion_estado || null,
     // NO mandes asignacion_fecha_Hora_modificacion si lo vas a hacer en DB
   };
 
@@ -189,6 +200,7 @@ useEffect(() => {
       asignacion_empleado_id: Number(nuevaAsignacion.asignacion_empleado_id),
       asignacion_turno_id: Number(nuevaAsignacion.asignacion_turno_id),
       asignacion_localidad_id: Number(nuevaAsignacion.asignacion_localidad_id),
+      asignacion_estado: esLaboral ? (esExceso ? "Excedido" :  "Normal") : null,
     })
 
     await fetchAsignaciones()
@@ -373,7 +385,13 @@ const zonaOk =
                 <Toggle
                   label="Es laboral"
                   checked={esLaboral}
-                  onChange={setEsLaboral}
+                  //onChange={setEsLaboral}
+                  onChange={(val) => {
+                  setEsLaboral(val);
+
+                  if (!val) {setEsExceso(false);setNuevaAsignacion((prev) => ({...prev,asignacion_estado: null,}));
+                  } else {
+                    setNuevaAsignacion((prev) => ({ ...prev, asignacion_estado: "Normal" }));}}}
                 />
 
                   <Select
@@ -453,55 +471,42 @@ const zonaOk =
                     value={motivoTurnoInfo}
                     disabled
                   />
-
-                  {/* <input
-                    type="date"
-                    className="w-full border p-2 rounded"
-                    value={nuevaAsignacion.asignacion_fecha_desde}
-                    onChange={(e) =>
-                      setNuevaAsignacion({
-                        ...nuevaAsignacion,
-                        asignacion_fecha_desde: e.target.value,
-                      })
-                    }
-                    required
-                  />
-                  <input
-                    type="date"
-                    className="w-full border p-2 rounded"
-                    value={nuevaAsignacion.asignacion_fecha_hasta}
-                    onChange={(e) =>
-                      setNuevaAsignacion({
-                        ...nuevaAsignacion,
-                        asignacion_fecha_hasta: e.target.value,
-                      })
-                    }
-                    required
-                  /> */}
                   
-<label className="block text-sm font-medium text-gray-700 mt-2">
-  Rango de fechas (Desde - Hasta)
-</label>
+                  <label className="block text-sm font-medium text-gray-700 mt-2">
+                    Rango de fechas (Desde - Hasta)
+                  </label>
 
-<DatePicker
-  selectsRange
-  startDate={fechaInicio}
-  endDate={fechaFin}
-  onChange={(update) => {
-    setRangoFechas(update);
+                  <DatePicker
+                    selectsRange
+                    startDate={fechaInicio}
+                    endDate={fechaFin}
+                    onChange={(update) => {
+                      setRangoFechas(update);
 
-    const [start, end] = update;
-    setNuevaAsignacion((prev) => ({
-      ...prev,
-      asignacion_fecha_desde: toYMD(start),
-      asignacion_fecha_hasta: toYMD(end),
-    }));
-  }}
-  dateFormat="dd/MM/yyyy"
-  placeholderText="Seleccioná un rango"
-  className="w-full border p-2 rounded"
-/>
-
+                      const [start, end] = update;
+                      setNuevaAsignacion((prev) => ({
+                        ...prev,
+                        asignacion_fecha_desde: toYMD(start),
+                        asignacion_fecha_hasta: toYMD(end),
+                      }));
+                    }}
+                    dateFormat="dd/MM/yyyy"
+                    placeholderText="Seleccioná un rango"
+                    className="w-full border p-2 rounded"
+                  />
+                  {esLaboral && (
+                    <Toggle
+                      label="Días Excedido?"
+                      checked={esExceso}
+                      onChange={(val) => {
+                        setEsExceso(val);
+                        setNuevaAsignacion((prev) => ({
+                          ...prev,
+                          asignacion_estado: val ? "Excedido" : "Normal",
+                        }));
+                      }}
+                    />
+                  )}
                   <textarea
                     className="w-full border p-2 rounded"
                     placeholder="Comentario"
@@ -608,12 +613,16 @@ const zonaOk =
           .map(t => ({ value: t.id_turno, label: t.turno_nombre }))
           .find(opt => opt.value == asignacionEdit.asignacion_turno_id) || null
         }
-        onChange={(opt) =>
+        onChange={(opt) => {
+          const turno = turnos.find((t) => t.id_turno == opt?.value);
           setAsignacionEdit(prev => ({
             ...prev,
-            asignacion_turno_id: opt?.value || ""
+            asignacion_turno_id: opt?.value || "",
+            asignacion_estado: turno?.turno_es_laboral === "Si" ? prev.asignacion_estado || "Normal" : null,
           }))
-        }
+          if (turno?.turno_es_laboral !== "Si") {
+          setEsExcesoEdit(false);}
+        }}
         options={turnos.map(t => ({
           value: t.id_turno,
           label: t.turno_nombre
@@ -644,7 +653,19 @@ const zonaOk =
         placeholderText="Seleccioná un rango"
         className="w-full border p-2 rounded"
       />
-
+      {esLaboralEdit && (
+        <Toggle
+          label="Días Excedido?"
+          checked={esExcesoEdit}
+          onChange={(val) => {
+            setEsExcesoEdit(val);
+            setAsignacionEdit((prev) => ({
+              ...prev,
+              asignacion_estado: val ? "Excedido" : "Normal",
+            }));
+          }}
+        />
+      )}
       <textarea
         className="w-full border p-2 rounded"
         placeholder="Comentario"
@@ -668,7 +689,6 @@ const zonaOk =
     </form>
   </Modal>
 )}
-
     </div>
   )
 }

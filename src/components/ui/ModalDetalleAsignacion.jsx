@@ -31,7 +31,7 @@ export default function ModalDetalleAsignacion({ asignacion, onClose }) {
 
           <Detail label="Turno" value={turno?.turno_nombre} />
           <Detail label="Motivo del turno" value={turno?.turno_motivo || "-"} />
-
+          <Detail label="Días Excedidos?" value={asignacion.asignacion_estado || "-"} />
           <Detail
             label="Desde"
             value={new Date(asignacion.asignacion_fecha_desde).toLocaleDateString("es-AR")}
