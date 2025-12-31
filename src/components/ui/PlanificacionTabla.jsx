@@ -52,17 +52,6 @@ const monthGroups = (() => {
     <div className="bg-white rounded border shadow-sm">
 <div className="px-4 py-2 border-b flex items-center justify-between">
   <div className="font-semibold">{localidadNombre}</div>
-
-  <div className="flex gap-2">
-    {monthGroups.map((g, idx) => (
-      <span
-        key={`${g.label}-${idx}`}
-        className="text-[11px] font-semibold text-gray-700 px-2 py-0.5 rounded border bg-gray-50"
-      >
-        {g.label}
-      </span>
-    ))}
-  </div>
 </div>
 
         
@@ -76,7 +65,25 @@ const monthGroups = (() => {
     <div className="min-w-max">
 
             <table className="min-w-max w-full border-separate border-spacing-0">
-              <thead className="sticky top-0 z-30">
+              <thead className="sticky top-0 z-30 bg-gray-100">
+                {/* FILA MESES */}
+                <tr>
+                    <th
+                    className="sticky left-0 z-40 bg-gray-100  border-r"
+                    style={{ minWidth: 220, height: 28 }}
+                    />
+
+                    {monthGroups.map((g, idx) => (
+                    <th
+                        key={`${g.label}-${idx}`}
+                        colSpan={g.span}
+                        className="border-b border-r text-center text-xs font-semibold"
+                        style={{ height: 28 }}
+                    >
+                        {g.label}
+                    </th>
+                    ))}
+                </tr>
                 <tr>
                   <th
                     className="sticky left-0 z-40 bg-gray-100 border-b border-r px-3 text-left text-sm font-semibold"
