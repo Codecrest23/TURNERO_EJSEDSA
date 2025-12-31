@@ -234,7 +234,7 @@ export default function Planificacion() {
 
           // si querés mostrar todas aunque estén vacías, sacá este if
           if (emps.length === 0) return null;
-console.log("render Planificacion", { loading, asignaciones: asignaciones?.length });
+//nsole.log("render Planificacion", { loading, asignaciones: asignaciones?.length });
 
           return (
             <PlanificacionTablaLocalidad
