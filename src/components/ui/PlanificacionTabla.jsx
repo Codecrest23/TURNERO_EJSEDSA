@@ -9,7 +9,7 @@ export default function PlanificacionTablaLocalidad({
 }) {
   const rowH = 40;
   const headerH = 35;
-  const maxVisibleRows = 3;
+  const maxVisibleRows = 4;
   const maxH = headerH + rowH * maxVisibleRows;
 const monthGroups = (() => {
   const groups = [];
@@ -50,8 +50,8 @@ const monthGroups = (() => {
 
   return (
     <div className="bg-white rounded border shadow-sm">
-<div className="px-4 py-2 border-b flex items-center justify-between">
-  <div className="font-semibold">{localidadNombre}</div>
+<div className="px-4 py-1 border-b flex items-center justify-between">
+  <div className="font-bold">{localidadNombre}</div>
 </div>
 
         
@@ -86,17 +86,17 @@ const monthGroups = (() => {
                 </tr>
                 <tr>
                   <th
-                    className="sticky left-0 z-40 bg-gray-100 border-b border-r px-3 text-left text-sm font-semibold"
+                    className="sticky left-0 z-40 bg-gray-100 border-b border-r px-4 text-left text-xs font-semibold"
                     style={{ minWidth: 220, height: headerH }}
                   >
-                    Empleado
+                    EMPLEADO
                   </th>
 
                   {days.map((d) => (
                     <th
                       key={toYMD(d)}
                       className="bg-gray-100 border-b border-r px-2 text-center text-xs font-semibold whitespace-nowrap"
-                      style={{ minWidth: 80, height: headerH }}
+                      style={{ minWidth: 80, height: 10 }}
                     >
                       {dayLabel(d)}
                     </th>
