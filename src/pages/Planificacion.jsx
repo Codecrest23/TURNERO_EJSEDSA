@@ -1,11 +1,11 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { useAsignaciones } from "../hooks/useAsignaciones";
 import { useLocalidades } from "../hooks/useLocalidades";
 import { useEmpleados } from "../hooks/useEmpleados";
-import FiltroFecha from "../components/ui/Filtros/FiltroFecha"
-// ✅ Ajustá este import según tu ruta real:
-import PlanificacionTablaLocalidad from "../components/ui/PlanificacionTabla"; 
-// (Tu componente export default function PlanificacionTablaLocalidad(...) )
+import FiltroFecha from "../components/ui/Filtros/FiltroFecha";
+
+// ✅ ahora usamos el componente agrupado
+import PlanificacionTabla from "../components/ui/PlanificacionTabla";
 
 function toYMD(date) {
   if (!date) return "";
@@ -14,7 +14,6 @@ function toYMD(date) {
   const d = String(date.getDate()).padStart(2, "0");
   return `${y}-${m}-${d}`;
 }
-
 
 function dayLabel(date) {
   // Inicial del día: D L M M J V S
@@ -25,7 +24,7 @@ function dayLabel(date) {
   return `${map[d.getDay()]} ${dd}/${mm}`;
 }
 
-// ====== para las fechas ======
+// ====== Fechas helpers ======
 const startOfDay = (d) => {
   const x = new Date(d);
   x.setHours(0, 0, 0, 0);
@@ -37,7 +36,6 @@ const addDays = (date, n) => {
   d.setDate(d.getDate() + n);
   return d;
 };
-
 
 // ====== Abreviaturas  ======
 function abrev(asig) {
@@ -57,7 +55,7 @@ function abrev(asig) {
   if (txt.includes("descans") || txt.includes("franco")) return "DES";
 
   // Trabajo normal (usina/atención/guardia/etc.)
-  if (asig.asignacion_estado!=="Excedido" && (txt.includes("usina") || txt.includes("atenc") || txt.includes("guard")|| txt.includes("trabaj"))) return "TRAB";
+  if (txt.includes("usina") || txt.includes("atenc") || txt.includes("guard") || txt.includes("trabaj")) return "TRAB";
 
   // fallback
   return "NOR";
@@ -65,36 +63,19 @@ function abrev(asig) {
 
 function renderCellLines(arrAsignaciones) {
   if (!arrAsignaciones || arrAsignaciones.length === 0) {
-    return { lines: ["", "", ""], tooltip: "" };
+    return { lines: ["", "", ""], tooltip: "", bgColor: null };
   }
 
-  // Generar labels
-  const labels = arrAsignaciones
-    .map(abrev)
-    .filter(Boolean);
+  // ✅ como dijiste: NO puede haber más de 1 por día (pero por las dudas, soporta array)
+  const labels = arrAsignaciones.map(abrev).filter(Boolean);
 
-  // Prioridad para ordenar lo más importante arriba
-  const priority = { EXC: 1, LIC: 2, CAP: 3, FER: 4, DES: 5, TRB: 6, NOR: 9 };
+  // Prioridad para ordenar (si viniera más de una)
+  const priority = { EXC: 1, LIC: 2, CAP: 3, FER: 4, DES: 5, TRAB: 6, NOR: 9 };
   labels.sort((a, b) => (priority[a] ?? 99) - (priority[b] ?? 99));
 
   const first2 = labels.slice(0, 2);
   const extra = labels.length - 2;
- // colores
-  const mapped = arrAsignaciones.map((a) => {
-    const code = abrev(a);
-    return {
-      a,
-      code,
-      p: priority[code] ?? 99,
-      color: a.turnos?.turno_color || null,
-    };
-  });
 
-  mapped.sort((x, y) => x.p - y.p);
-
-  const top = mapped[0];
-  const code = top.code;
-  // Tooltip con detalle (abreviado + motivo + comentario)
   const tooltip = arrAsignaciones
     .map((a) => {
       const code = abrev(a);
@@ -104,57 +85,43 @@ function renderCellLines(arrAsignaciones) {
     })
     .join("\n");
 
+  // ✅ color de turno (tomamos el “principal”)
+  const bgColor = arrAsignaciones[0]?.turnos?.turno_color || null;
+
   return {
-    lines: [
-      first2[0] || "",
-      first2[1] || "",
-      extra > 0 ? `+${extra}` : "",
-    ],
+    lines: [first2[0] || "", first2[1] || "", extra > 0 ? `+${extra}` : ""],
     tooltip,
-    bgColor: top.color,
+    bgColor,
   };
 }
 
 export default function Planificacion() {
-  const { asignaciones, fetchAsignaciones, loading } = useAsignaciones();
+  const { asignaciones, loading } = useAsignaciones();
   const { localidades } = useLocalidades();
   const { empleados } = useEmpleados();
 
-  const [fechaDesde, setFechaDesde] = useState(() =>  startOfDay(addDays(new Date(), -30)));
-  const [fechaHasta, setFechaHasta] = useState(() =>  startOfDay(addDays(new Date(), 30)));
-
-  // Rango por defecto: 14 días desde hoy
-  const [desde, setDesde] = useState(() => {
-    const d = new Date();
-    d.setHours(0, 0, 0, 0);
-    return addDays(d, -60);
-  });
-
-  const [hasta, setHasta] = useState(() => {
-    const d = new Date();
-    d.setHours(0, 0, 0, 0);
-    return addDays(d, 30);
-  });
-
-  // useEffect(() => {
-  //   fetchAsignaciones();
-  // }, []);
+  // ✅ default: 3 meses hacia atrás hasta hoy (como querías antes)
+  // Si querés “hoy a 3 meses atrás” y listo, uso eso:
+  const [fechaDesde, setFechaDesde] = useState(() => startOfDay(addDays(new Date(), -30)));
+  const [fechaHasta, setFechaHasta] = useState(() => startOfDay(new Date(),+30));
 
   // Días visibles en columnas
-const days = useMemo(() => {
-  const out = [];
-  const start = new Date(fechaDesde); start.setHours(0, 0, 0, 0);
-  const end = new Date(fechaHasta); end.setHours(0, 0, 0, 0);
+  const days = useMemo(() => {
+    const out = [];
+    if (!fechaDesde || !fechaHasta) return out;
 
-  if (!fechaDesde || !fechaHasta) return out;
-  if (end < start) return out;
+    const start = new Date(fechaDesde);
+    const end = new Date(fechaHasta);
+    start.setHours(0, 0, 0, 0);
+    end.setHours(0, 0, 0, 0);
 
-  const diff = Math.round((end - start) / (1000 * 60 * 60 * 24));
-  for (let i = 0; i <= diff; i++) out.push(addDays(start, i));
-  return out;
-}, [fechaDesde, fechaHasta]);
+    if (end < start) return out;
 
-  // Índice principal:
+    const diff = Math.round((end - start) / (1000 * 60 * 60 * 24));
+    for (let i = 0; i <= diff; i++) out.push(addDays(start, i));
+    return out;
+  }, [fechaDesde, fechaHasta]);
+
   // grid: Map(locId -> Map(empId -> Map(dateYMD -> arrayAsignaciones[] )))
   const grid = useMemo(() => {
     const idx = new Map();
@@ -163,8 +130,10 @@ const days = useMemo(() => {
       const locId = Number(a.asignacion_localidad_id);
       const empId = Number(a.asignacion_empleado_id);
 
-      const aStart = new Date(a.asignacion_fecha_desde); aStart.setHours(0,0,0,0);
-      const aEnd = new Date(a.asignacion_fecha_hasta); aEnd.setHours(0,0,0,0);
+      const aStart = new Date(a.asignacion_fecha_desde);
+      const aEnd = new Date(a.asignacion_fecha_hasta);
+      aStart.setHours(0, 0, 0, 0);
+      aEnd.setHours(0, 0, 0, 0);
 
       const locMap = idx.get(locId) ?? new Map();
       const empMap = locMap.get(empId) ?? new Map();
@@ -174,7 +143,7 @@ const days = useMemo(() => {
         const d = addDays(aStart, i);
         const key = toYMD(d);
 
-        // ✅ NO pisar: acumular arrays (porque puede haber 2 cosas el mismo día)
+        // por robustez: acumulamos (aunque vos ya garantizás 1 por día)
         const arr = empMap.get(key) ?? [];
         arr.push(a);
         empMap.set(key, arr);
@@ -187,18 +156,23 @@ const days = useMemo(() => {
     return idx;
   }, [asignaciones]);
 
-  // Empleados por localidad SEGÚN asignaciones en rango visible
-  const empleadosPorLocalidadSegunAsignacion = useMemo(() => {
+  // Empleados por localidad según asignaciones que se superponen al rango visible
+  const empIdsPorLocalidad = useMemo(() => {
     const map = new Map();
-    const start = new Date(desde); start.setHours(0,0,0,0);
-    const end = new Date(hasta); end.setHours(0,0,0,0);
+
+    const start = new Date(fechaDesde);
+    const end = new Date(fechaHasta);
+    start.setHours(0, 0, 0, 0);
+    end.setHours(0, 0, 0, 0);
 
     for (const a of asignaciones) {
       const locId = Number(a.asignacion_localidad_id);
       const empId = Number(a.asignacion_empleado_id);
 
-      const aStart = new Date(a.asignacion_fecha_desde); aStart.setHours(0,0,0,0);
-      const aEnd = new Date(a.asignacion_fecha_hasta); aEnd.setHours(0,0,0,0);
+      const aStart = new Date(a.asignacion_fecha_desde);
+      const aEnd = new Date(a.asignacion_fecha_hasta);
+      aStart.setHours(0, 0, 0, 0);
+      aEnd.setHours(0, 0, 0, 0);
 
       const seSuperpone = aEnd >= start && aStart <= end;
       if (!seSuperpone) continue;
@@ -216,65 +190,67 @@ const days = useMemo(() => {
     );
   }, [localidades]);
 
+  // Armamos groups para una sola tabla
+  const groups = useMemo(() => {
+    const out = [];
+
+    for (const loc of localidadesOrdenadas) {
+      const locId = Number(loc.id_localidad);
+      const locGrid = grid.get(locId) ?? new Map();
+
+      const empIds = empIdsPorLocalidad.get(locId) ?? new Set();
+
+      const emps = empleados
+        .filter((e) => empIds.has(Number(e.id_empleado)))
+        .sort((a, b) =>
+          (a.empleado_nombre_apellido ?? "").localeCompare(b.empleado_nombre_apellido ?? "")
+        );
+
+      // si no querés mostrar vacías:
+      if (emps.length === 0) continue;
+
+      out.push({
+        locId,
+        locNombre: loc.localidad_nombre,
+        empleados: emps,
+        empMapByEmpId: locGrid,
+      });
+    }
+
+    return out;
+  }, [localidadesOrdenadas, grid, empIdsPorLocalidad, empleados]);
+
   if (loading) return <p className="p-4">Cargando...</p>;
 
   return (
-    <div className="max-w-8xl mx-auto p-4 space-y-6">
+    <div className="max-w-8xl mx-auto p-4 space-y-4">
       <div className="flex flex-col gap-3 md:flex-row md:items-center">
         <h1 className="text-xl font-semibold">Planificación</h1>
 
         <div className="md:ml-auto flex flex-wrap items-center gap-2">
-          <label className="text-sm text-gray-600">Desde</label>
-
-            <FiltroFecha
-              label="Desde"
-              value={fechaDesde}
-              onChange={(d) => setFechaDesde(d)}
-              placeholder="Desde..."
-            />
-
           <FiltroFecha
-              label="Hasta"
-              value={fechaHasta}
-              onChange={(d) => setFechaHasta(d)}
-              placeholder="Hasta..."
-            />
-
+            label="Desde"
+            value={fechaDesde}
+            onChange={(d) => setFechaDesde(d)}
+            placeholder="Desde..."
+          />
+          <FiltroFecha
+            label="Hasta"
+            value={fechaHasta}
+            onChange={(d) => setFechaHasta(d)}
+            placeholder="Hasta..."
+          />
         </div>
       </div>
 
-      {/* Tablas por localidad */}
-      <div className="space-y-6">
-        {localidadesOrdenadas.map((loc) => {
-          const locId = Number(loc.id_localidad);
-          const locGrid = grid.get(locId) ?? new Map();
-
-          const empIds = empleadosPorLocalidadSegunAsignacion.get(locId) ?? new Set();
-
-          const emps = empleados
-            .filter((e) => empIds.has(Number(e.id_empleado)))
-            .sort((a, b) =>
-              (a.empleado_nombre_apellido ?? "").localeCompare(b.empleado_nombre_apellido ?? "")
-            );
-
-          // si querés mostrar todas aunque estén vacías, sacá este if
-          if (emps.length === 0) return null;
-//nsole.log("render Planificacion", { loading, asignaciones: asignaciones?.length });
-
-          return (
-            <PlanificacionTablaLocalidad
-              key={locId}
-              localidadNombre={loc.localidad_nombre}
-              days={days}
-              empleados={emps}
-              empMapByEmpId={locGrid}
-              dayLabel={dayLabel}
-              toYMD={toYMD}
-              renderCellLines={renderCellLines}
-            />
-          );
-        })}
-      </div>
+      <PlanificacionTabla
+        days={days}
+        groups={groups}
+        dayLabel={dayLabel}
+        toYMD={toYMD}
+        renderCellLines={renderCellLines}
+      />
     </div>
   );
 }
+
