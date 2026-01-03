@@ -49,7 +49,7 @@ const monthGroups = (() => {
     })();
 
   return (
-    <div className="bg-white rounded border shadow-sm">
+    <div className="bg-white rounded shadow-sm">
 <div className="px-4 py-1 border-b flex items-center justify-between">
   <div className="font-bold">{localidadNombre}</div>
 </div>
@@ -57,7 +57,7 @@ const monthGroups = (() => {
         
 <div
   className="grid"
-  style={{ gridTemplateRows: "1fr 5px", maxHeight: maxH }}
+  style={{ gridTemplateRows: "1fr 3px", maxHeight: maxH }}
 >
   {/* 1) Área principal: scroll vertical */}
   <div className="overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent">
@@ -86,7 +86,7 @@ const monthGroups = (() => {
                 </tr>
                 <tr>
                   <th
-                    className="sticky left-0 z-40 bg-gray-100 border-b border-r px-4 text-left text-xs font-semibold"
+                    className="sticky left-0 z-40 bg-gray-100 border-b border-r px-2 text-left text-xs font-semibold"
                     style={{ minWidth: 220, height: headerH }}
                   >
                     EMPLEADO
@@ -112,7 +112,7 @@ const monthGroups = (() => {
                   return (
                     <tr key={empId} className="hover:bg-gray-50">
                       <td
-                        className="sticky left-0 z-20 bg-white border-b border-r px-3 text-sm"
+                        className="sticky left-0 z-20 bg-white border-b border-r px-2 text-sm"
                         style={{ minWidth: 220, height: rowH }}
                       >
                         {e.empleado_nombre_apellido}
@@ -121,20 +121,20 @@ const monthGroups = (() => {
                       {days.map((d) => {
                         const key = toYMD(d);
                         const arr = mapFechas.get(key) ?? [];
-                        const { lines, tooltip } = renderCellLines(arr);
+                        const { lines, tooltip,bgColor } = renderCellLines(arr);
 
                         return (
                           <td
                             key={key}
                             title={tooltip}
                             className="border-b border-r px-1 text-center text-[11px] font-semibold"
-                            style={{ minWidth: 80, height: rowH }}
+                            style={{ minWidth: 80, height: rowH,  backgroundColor: bgColor ? `${bgColor}26` : undefined, }}
                           >
                             <div className="leading-2">
                               <div>{lines[0] || ""}</div>
                               <div>{lines[1] || ""}</div>
                               {lines[2] ? (
-                                <div className="text-[10px] font-normal">{lines[2]}</div>
+                                <div className="text-[9px] font-normal">{lines[2]}</div>
                               ) : null}
                             </div>
                           </td>

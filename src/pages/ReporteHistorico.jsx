@@ -122,7 +122,7 @@ export default function InformeHistorico() {
 
       <Table
         headers={[
-          "Zona","Localidad","Empleado","Turno","Motivo","Desde","Hasta",
+          "Zona","Localidad","Empleado","Turno","Motivo","Desde","Hasta","Tipo"
         ]}
       >
         {filteredAsignaciones.map((a) => (
@@ -134,6 +134,7 @@ export default function InformeHistorico() {
             <td className="px-6 py-3">{a.turnos?.turno_motivo}</td>
             <td className="px-6 py-3">{new Date(a.asignacion_fecha_desde).toLocaleDateString("es-AR")}</td>
             <td className="px-6 py-3">{new Date(a.asignacion_fecha_hasta).toLocaleDateString("es-AR")}</td>
+            <td className="px-6 py-3">{a.asignacion_estado}</td>
           </tr>
         ))}
       </Table>

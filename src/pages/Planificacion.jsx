@@ -15,17 +15,6 @@ function toYMD(date) {
   return `${y}-${m}-${d}`;
 }
 
-// function ymdToDate(ymd) {
-//   if (!ymd) return null;
-//   const [y, m, d] = ymd.split("-").map(Number);
-//   return new Date(y, m - 1, d);
-// }
-
-// function addDays(date, n) {
-//   const d = new Date(date);
-//   d.setDate(d.getDate() + n);
-//   return d;
-// }
 
 function dayLabel(date) {
   // Inicial del día: D L M M J V S
@@ -48,21 +37,14 @@ const addDays = (date, n) => {
   d.setDate(d.getDate() + n);
   return d;
 };
-// const [fechaDesde, setFechaDesde] = useState(null);
-// const [fechaHasta, setFechaHasta] = useState(null);
-// const [fechaDesde, setFechaDesde] = useState(() =>  startOfDay(addDays(new Date(), -30)));
-
-// const [fechaHasta, setFechaHasta] = useState(() =>  startOfDay(addDays(new Date(), 30)));
-
-// ====== para las fechas ======
 
 
-// ====== Abreviaturas (ajustá las reglas a tus motivos reales) ======
+// ====== Abreviaturas  ======
 function abrev(asig) {
   if (!asig) return "";
 
   // Estado prioridad
-  if ((asig.asignacion_estado || "").toUpperCase() === "EXCESO") return "EXC";
+  if ((asig.asignacion_estado || "").toUpperCase() === "Excedido") return "EXC";
 
   const motivo = (asig.turnos?.turno_motivo || "").toLowerCase();
   const turnoNombre = (asig.turnos?.turno_nombre || "").toLowerCase();
@@ -75,7 +57,7 @@ function abrev(asig) {
   if (txt.includes("descans") || txt.includes("franco")) return "DES";
 
   // Trabajo normal (usina/atención/guardia/etc.)
-  if (txt.includes("usina") || txt.includes("atenc") || txt.includes("guard")) return "TRB";
+  if (asig.asignacion_estado!=="Excedido" && (txt.includes("usina") || txt.includes("atenc") || txt.includes("guard")|| txt.includes("trabaj"))) return "TRAB";
 
   // fallback
   return "NOR";
@@ -97,7 +79,21 @@ function renderCellLines(arrAsignaciones) {
 
   const first2 = labels.slice(0, 2);
   const extra = labels.length - 2;
+ // colores
+  const mapped = arrAsignaciones.map((a) => {
+    const code = abrev(a);
+    return {
+      a,
+      code,
+      p: priority[code] ?? 99,
+      color: a.turnos?.turno_color || null,
+    };
+  });
 
+  mapped.sort((x, y) => x.p - y.p);
+
+  const top = mapped[0];
+  const code = top.code;
   // Tooltip con detalle (abreviado + motivo + comentario)
   const tooltip = arrAsignaciones
     .map((a) => {
@@ -115,6 +111,7 @@ function renderCellLines(arrAsignaciones) {
       extra > 0 ? `+${extra}` : "",
     ],
     tooltip,
+    bgColor: top.color,
   };
 }
 
@@ -228,35 +225,7 @@ const days = useMemo(() => {
 
         <div className="md:ml-auto flex flex-wrap items-center gap-2">
           <label className="text-sm text-gray-600">Desde</label>
-          {/* <input
-            type="date"
-            value={toYMD(desde)}
-            // onChange={(e) => setDesde(ymdToDate(e.target.value))}
-            onChange={(e) => {
-                              const val = e.target.value;
-                              if (!val) return;           // evita null
-                              const d = ymdToDate(val);
-                              if (!d || Number.isNaN(d.getTime())) return;
-                              setDesde(d);
-                            }}
 
-            className="border rounded px-2 py-1 text-sm"
-          />
-          <label className="text-sm text-gray-600">Hasta</label>
-          <input
-            type="date"
-            value={toYMD(hasta)}
-            // onChange={(e) => setHasta(ymdToDate(e.target.value))}
-            onChange={(e) => {
-                              const val = e.target.value;
-                              if (!val) return;           // evita null
-                              const d = ymdToDate(val);
-                              if (!d || Number.isNaN(d.getTime())) return;
-                              setHasta(d);
-                            }}
-
-            className="border rounded px-2 py-1 text-sm"
-          /> */}
             <FiltroFecha
               label="Desde"
               value={fechaDesde}
