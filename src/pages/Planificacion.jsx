@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useAsignaciones } from "../hooks/useAsignaciones";
 import { useLocalidades } from "../hooks/useLocalidades";
 import { useEmpleados } from "../hooks/useEmpleados";
+import FiltroFecha from "../components/ui/Filtros/FiltroFecha"
 // ✅ Ajustá este import según tu ruta real:
 import PlanificacionTablaLocalidad from "../components/ui/PlanificacionTabla"; 
 // (Tu componente export default function PlanificacionTablaLocalidad(...) )
@@ -14,17 +15,17 @@ function toYMD(date) {
   return `${y}-${m}-${d}`;
 }
 
-function ymdToDate(ymd) {
-  if (!ymd) return null;
-  const [y, m, d] = ymd.split("-").map(Number);
-  return new Date(y, m - 1, d);
-}
+// function ymdToDate(ymd) {
+//   if (!ymd) return null;
+//   const [y, m, d] = ymd.split("-").map(Number);
+//   return new Date(y, m - 1, d);
+// }
 
-function addDays(date, n) {
-  const d = new Date(date);
-  d.setDate(d.getDate() + n);
-  return d;
-}
+// function addDays(date, n) {
+//   const d = new Date(date);
+//   d.setDate(d.getDate() + n);
+//   return d;
+// }
 
 function dayLabel(date) {
   // Inicial del día: D L M M J V S
@@ -34,6 +35,27 @@ function dayLabel(date) {
   const mm = String(d.getMonth() + 1).padStart(2, "0");
   return `${map[d.getDay()]} ${dd}/${mm}`;
 }
+
+// ====== para las fechas ======
+const startOfDay = (d) => {
+  const x = new Date(d);
+  x.setHours(0, 0, 0, 0);
+  return x;
+};
+
+const addDays = (date, n) => {
+  const d = new Date(date);
+  d.setDate(d.getDate() + n);
+  return d;
+};
+// const [fechaDesde, setFechaDesde] = useState(null);
+// const [fechaHasta, setFechaHasta] = useState(null);
+// const [fechaDesde, setFechaDesde] = useState(() =>  startOfDay(addDays(new Date(), -30)));
+
+// const [fechaHasta, setFechaHasta] = useState(() =>  startOfDay(addDays(new Date(), 30)));
+
+// ====== para las fechas ======
+
 
 // ====== Abreviaturas (ajustá las reglas a tus motivos reales) ======
 function abrev(asig) {
@@ -101,17 +123,20 @@ export default function Planificacion() {
   const { localidades } = useLocalidades();
   const { empleados } = useEmpleados();
 
+  const [fechaDesde, setFechaDesde] = useState(() =>  startOfDay(addDays(new Date(), -30)));
+  const [fechaHasta, setFechaHasta] = useState(() =>  startOfDay(addDays(new Date(), 30)));
+
   // Rango por defecto: 14 días desde hoy
   const [desde, setDesde] = useState(() => {
     const d = new Date();
     d.setHours(0, 0, 0, 0);
-    return d;
+    return addDays(d, -60);
   });
 
   const [hasta, setHasta] = useState(() => {
     const d = new Date();
     d.setHours(0, 0, 0, 0);
-    return addDays(d, 13);
+    return addDays(d, 30);
   });
 
   // useEffect(() => {
@@ -119,17 +144,18 @@ export default function Planificacion() {
   // }, []);
 
   // Días visibles en columnas
-  const days = useMemo(() => {
-    const out = [];
-    const start = new Date(desde); start.setHours(0, 0, 0, 0);
-    const end = new Date(hasta); end.setHours(0, 0, 0, 0);
+const days = useMemo(() => {
+  const out = [];
+  const start = new Date(fechaDesde); start.setHours(0, 0, 0, 0);
+  const end = new Date(fechaHasta); end.setHours(0, 0, 0, 0);
 
-    if (end < start) return out;
+  if (!fechaDesde || !fechaHasta) return out;
+  if (end < start) return out;
 
-    const diff = Math.round((end - start) / (1000 * 60 * 60 * 24));
-    for (let i = 0; i <= diff; i++) out.push(addDays(start, i));
-    return out;
-  }, [desde, hasta]);
+  const diff = Math.round((end - start) / (1000 * 60 * 60 * 24));
+  for (let i = 0; i <= diff; i++) out.push(addDays(start, i));
+  return out;
+}, [fechaDesde, fechaHasta]);
 
   // Índice principal:
   // grid: Map(locId -> Map(empId -> Map(dateYMD -> arrayAsignaciones[] )))
@@ -185,7 +211,7 @@ export default function Planificacion() {
     }
 
     return map; // locId -> Set(empId)
-  }, [asignaciones, desde, hasta]);
+  }, [asignaciones, fechaDesde, fechaHasta]);
 
   const localidadesOrdenadas = useMemo(() => {
     return [...localidades].sort((a, b) =>
@@ -202,19 +228,49 @@ export default function Planificacion() {
 
         <div className="md:ml-auto flex flex-wrap items-center gap-2">
           <label className="text-sm text-gray-600">Desde</label>
-          <input
+          {/* <input
             type="date"
             value={toYMD(desde)}
-            onChange={(e) => setDesde(ymdToDate(e.target.value))}
+            // onChange={(e) => setDesde(ymdToDate(e.target.value))}
+            onChange={(e) => {
+                              const val = e.target.value;
+                              if (!val) return;           // evita null
+                              const d = ymdToDate(val);
+                              if (!d || Number.isNaN(d.getTime())) return;
+                              setDesde(d);
+                            }}
+
             className="border rounded px-2 py-1 text-sm"
           />
           <label className="text-sm text-gray-600">Hasta</label>
           <input
             type="date"
             value={toYMD(hasta)}
-            onChange={(e) => setHasta(ymdToDate(e.target.value))}
+            // onChange={(e) => setHasta(ymdToDate(e.target.value))}
+            onChange={(e) => {
+                              const val = e.target.value;
+                              if (!val) return;           // evita null
+                              const d = ymdToDate(val);
+                              if (!d || Number.isNaN(d.getTime())) return;
+                              setHasta(d);
+                            }}
+
             className="border rounded px-2 py-1 text-sm"
-          />
+          /> */}
+            <FiltroFecha
+              label="Desde"
+              value={fechaDesde}
+              onChange={(d) => setFechaDesde(d)}
+              placeholder="Desde..."
+            />
+
+          <FiltroFecha
+              label="Hasta"
+              value={fechaHasta}
+              onChange={(d) => setFechaHasta(d)}
+              placeholder="Hasta..."
+            />
+
         </div>
       </div>
 
