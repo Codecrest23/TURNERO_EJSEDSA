@@ -3,7 +3,8 @@ import { useAsignaciones } from "../hooks/useAsignaciones";
 import { useLocalidades } from "../hooks/useLocalidades";
 import { useEmpleados } from "../hooks/useEmpleados";
 import FiltroFecha from "../components/ui/Filtros/FiltroFecha";
-
+import { Title, Subtitle } from "../components/ui/Typography"
+import { Calendar } from "lucide-react"
 // ✅ ahora usamos el componente agrupado
 import PlanificacionTabla from "../components/ui/PlanificacionTabla";
 
@@ -223,11 +224,16 @@ export default function Planificacion() {
   if (loading) return <p className="p-4">Cargando...</p>;
 
   return (
-    <div className="max-w-8xl mx-auto p-4 space-y-4">
-      <div className="flex flex-col gap-3 md:flex-row md:items-center">
-        <h1 className="text-xl font-semibold">Planificación</h1>
+    <div className="max-w-8xl mx-auto space-y-2">
+    
+        <Title>
+        <div className="flex items-center gap-z">
+          <Calendar className="w-6 h-6 text-gray-700" />
+          Planificación
+        </div>
+        </Title>
 
-        <div className="md:ml-auto flex flex-wrap items-center gap-2">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">          
           <FiltroFecha
             label="Desde"
             value={fechaDesde}
@@ -241,7 +247,7 @@ export default function Planificacion() {
             placeholder="Hasta..."
           />
         </div>
-      </div>
+   
 
       <PlanificacionTabla
         days={days}

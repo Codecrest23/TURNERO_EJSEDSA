@@ -1,4 +1,6 @@
-import { Fragment, useEffect, useMemo, useRef, useState } from "react";
+import { Fragment, useEffect, useMemo, useState } from "react";
+import ModalDetalleAsignacionMini from "../ui/ModalDetalleAsignacionMini";
+//import { MessageSquareText } from "lucide-react";
 
 export default function PlanificacionTabla({
   days,
@@ -66,11 +68,13 @@ export default function PlanificacionTabla({
   const tableWidth = useMemo(() => {
     return stickyColW + days.length * dayColW;
   }, [days.length]);
+  const [asignacionDetalle, setAsignacionDetalle] = useState(null);
 
 
 
   return (
-    <div className="bg-white rounded shadow-sm border">
+    <div className="bg-white shadow-sm border border-gray-300 rounded-xl overflow-hidden">
+
 
       <div
         className="grid"
@@ -87,7 +91,7 @@ export default function PlanificacionTabla({
                   {/* Fila meses */}
                   <tr >
                     <th
-                      className="sticky left-0 top-0 bg-gray-300  z-[80]"
+                      className="sticky left-0 top-0 bg-gray-200  z-[90] border-r  border-gray-300 "
                       style={{ width: stickyColW, minWidth: stickyColW, height: monthH }}
                     >
                         Meses
@@ -96,7 +100,7 @@ export default function PlanificacionTabla({
                       <th
                         key={`${g.label}-${idx}`}
                         colSpan={g.span}
-                        className="sticky top-0 bg-gray-300 border-r text-center text-xs font-semibold z-[60]"
+                        className="sticky top-0 bg-gray-200 border-r text-center text-xs font-semibold z-[80] border-gray-300"
                         style={{ height: monthH }}
                       >
                         {g.label}
@@ -107,7 +111,7 @@ export default function PlanificacionTabla({
                   {/* Fila días */}
                   <tr >
                     <th
-                      className="sticky left-0 top-6 bg-gray-100 border-b border-r z-[70]"
+                      className="sticky left-0 top-[26px] bg-gray-100 border-b border-r border-gray-200 z-[70]"
                       style={{ width: stickyColW, minWidth: stickyColW, height: headerH }}
                     >
                        Localidad / Empleado
@@ -116,7 +120,7 @@ export default function PlanificacionTabla({
                     {days.map((d) => (
                       <th
                         key={toYMD(d)}
-                        className=" bg-gray-100 border-b border-r px-2 text-center text-xs font-semibold whitespace-nowrap sticky top-6"
+                        className=" bg-gray-100 border-b border-r border-gray-200 px-2 text-center text-xs font-semibold whitespace-nowrap sticky top-[26px] z-[60]"
                         style={{ width: dayColW, minWidth: dayColW, height: headerH }}
                       >
                         {dayLabel(d)}
@@ -133,17 +137,17 @@ export default function PlanificacionTabla({
                     return (
                       <Fragment key={g.locId}>
                         {/* Header de localidad (fila de grupo) */}
-                        <tr className="bg-gray-50">
+                        <tr className="bg-gray-100/60">
                           <td
                             colSpan={totalCols}
-                            className=" bg-gray-50 border-b px-3 py-2 text-sm font-semibold"
+                            className=" border-b border-gray-300 px-3 py-2 text-sm font-semibold"
                             style={{ top: monthH + headerH }}
                           >
-                            <span className="sticky left-0 z-10 px-2 z-50">
+                            <span className="sticky left-0 z-10 px-2 z-[40]">
                             <button
                               type="button"
                               onClick={() => setOpen((p) => ({ ...p, [g.locId]: !isOpen }))}
-                              className=" inline-flex items-center justify-center w-6 h-6 mr-2 rounded border bg-white hover:bg-gray-100 "
+                              className=" inline-flex items-center justify-center w-5 h-5 mr-2 rounded border bg-white hover:bg-gray-200  border-gray-400"
                               title={isOpen ? "Colapsar" : "Expandir"}
                             >
                               {isOpen ? "−" : "+"}
@@ -165,9 +169,9 @@ export default function PlanificacionTabla({
                             const mapFechas = g.empMapByEmpId.get(empId) ?? new Map();
 
                             return (
-                              <tr key={`${g.locId}-${empId}`} className="hover:bg-gray-50">
+                              <tr key={`${g.locId}-${empId}`} className="hover:bg-gray-100/40">
                                 <td
-                                  className="sticky left-0 z-10 bg-white border-b border-r px-2 text-sm"
+                                  className="sticky left-0 z-10 bg-white border-b border-r px-2 text-sm border-gray-200"
                                   style={{ width: stickyColW, minWidth: stickyColW, height: rowH }}
                                 >
                                   {e.empleado_nombre_apellido}
@@ -177,19 +181,42 @@ export default function PlanificacionTabla({
                                   const key = toYMD(d);
                                   const arr = mapFechas.get(key) ?? [];
                                   const { lines, tooltip, bgColor } = renderCellLines(arr);
+                                //para los comentarios
+                                  const asig = arr?.[0]; // como no puede haber más de una por día
+                                const tieneComentario =
+                                ((asig?.asignacion_comentario ?? "").trim() !== "") 
 
                                   return (
                                     <td
                                       key={`${empId}-${key}`}
                                       title={tooltip}
-                                      className="border-b border-r px-1 text-center text-[11px] font-semibold"
+                                       onDoubleClick={() => {
+                                            // no puede haber más de una por día, así que tomamos la primera
+                                            const a = arr?.[0];
+                                            if (a) setAsignacionDetalle(a);
+                                        }}
+                                      className="relative border-b border-r px-1 text-center text-[11px] font-semibold border-gray-200 cursor-pointer hover:bg-gray-100/60"
                                       style={{
                                         width: dayColW,
                                         minWidth: dayColW,
                                         height: rowH,
-                                        backgroundColor: bgColor ? `${bgColor}26` : undefined,
+                                        backgroundColor: bgColor ? `${bgColor}30` : undefined,
                                       }}
                                     >
+                                        {tieneComentario && (
+                                            <span
+                                                className="absolute top-[2px] right-[2px] w-0 h-0 
+                                                        border-l-[7px] border-l-transparent
+                                                        border-t-[7px] border-t-blue-500"
+                                                title="Tiene comentario"
+                                            />
+                                            // <MessageSquareText
+                                            // size={14}
+                                            // className="absolute top-1 right-1 text-gray-500 opacity-80"
+                                            // title="Tiene comentario"
+                                            //     />
+                                            )}
+
                                       <div className="leading-4">
                                         <div>{lines[0] || ""}</div>
                                         <div>{lines[1] || ""}</div>
@@ -209,8 +236,13 @@ export default function PlanificacionTabla({
                 </tbody>
               </table>
             </div>
-
+            
+ 
       </div>
+    <ModalDetalleAsignacionMini
+        asignacion={asignacionDetalle}
+        onClose={() => setAsignacionDetalle(null)}
+        />
     </div>
   );
 }

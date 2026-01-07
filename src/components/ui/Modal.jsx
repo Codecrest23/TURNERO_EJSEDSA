@@ -1,6 +1,6 @@
 export default function Modal({ title, children, onClose }) {
   return (
-    <div className="fixed inset-0 flex items-center justify-center bg-black/50 backdrop-blur-sm z-50">
+    <div className="fixed inset-0 flex items-center justify-center bg-black/50 backdrop-blur-xs  z-[9999]">
       <div className="bg-white p-6 rounded-xl shadow-xl w-96">
         {/* Encabezado */}
         <div className="flex justify-between items-center mb-4">
