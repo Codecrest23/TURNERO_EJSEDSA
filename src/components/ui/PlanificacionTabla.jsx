@@ -218,11 +218,22 @@ export default function PlanificacionTabla({
                                             )}
 
                                       <div className="leading-4">
-                                        <div>{lines[0] || ""}</div>
+                                        {/* <div>{lines[0] || ""}</div>
                                         <div>{lines[1] || ""}</div>
                                         {lines[2] ? (
                                           <div className="text-[9px] font-normal">{lines[2]}</div>
-                                        ) : null}
+                                        ) : null} */}
+                                         <div className={lines[0] === "EXC" ? "text-red-600 font-bold" : ""}>
+                                          {lines[0] || ""}
+                                          </div>
+
+                                            <div className={lines[1] === "EXC" ? "text-red-600 font-bold" : ""}>
+                                              {lines[1] || ""}
+                                            </div>
+
+                                            {lines[2] ? (
+                                              <div className="text-[9px] font-normal">{lines[2]}</div>
+                                          ) : null}
                                       </div>
                                     </td>
                                   );

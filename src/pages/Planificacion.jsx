@@ -5,6 +5,14 @@ import { useEmpleados } from "../hooks/useEmpleados";
 import FiltroFecha from "../components/ui/Filtros/FiltroFecha";
 import { Title, Subtitle } from "../components/ui/Typography"
 import { Calendar } from "lucide-react"
+import ReferenciaTurnos from "../components/ui/ReferenciasTurnos";
+import ModalReferenciaTurnos from "../components/ui/ModalReferenciaTurnos";
+import { useZonas } from "../hooks/useZonas";
+import FiltroEmpleado from "../components/ui/Filtros/FiltroEmpleado";
+import FiltroLocalidad from "../components/ui/Filtros/FiltroLocalidad";
+import FiltroZona from "../components/ui/Filtros/FiltroZona";
+import Button from "../components/ui/Button";
+
 // ✅ ahora usamos el componente agrupado
 import PlanificacionTabla from "../components/ui/PlanificacionTabla";
 
@@ -43,16 +51,16 @@ function abrev(asig) {
   if (!asig) return "";
 
   // Estado prioridad
-  if ((asig.asignacion_estado || "").toUpperCase() === "Excedido") return "EXC";
+  if ((asig.asignacion_estado || "").toUpperCase() === "EXCEDIDO") return "EXC";
 
   const motivo = (asig.turnos?.turno_motivo || "").toLowerCase();
   const turnoNombre = (asig.turnos?.turno_nombre || "").toLowerCase();
   const comentario = (asig.asignacion_comentario || "").toLowerCase();
   const txt = `${motivo} ${turnoNombre} ${comentario}`;
+  const exced= (asig.asignacion_estado || "").toUpperCase();
 
   if (txt.includes("licen")) return "LIC";
   if (txt.includes("capaci") || txt.includes("curso") || txt.includes("inducc")) return "CAP";
-  if (txt.includes("feriad")) return "FER";
   if (txt.includes("descans") || txt.includes("franco")) return "DES";
 
   // Trabajo normal (usina/atención/guardia/etc.)
@@ -100,11 +108,32 @@ export default function Planificacion() {
   const { asignaciones, loading } = useAsignaciones();
   const { localidades } = useLocalidades();
   const { empleados } = useEmpleados();
+  const { zonas } = useZonas();
 
   // ✅ default: 3 meses hacia atrás hasta hoy (como querías antes)
   // Si querés “hoy a 3 meses atrás” y listo, uso eso:
   const [fechaDesde, setFechaDesde] = useState(() => startOfDay(addDays(new Date(), -30)));
   const [fechaHasta, setFechaHasta] = useState(() => startOfDay(new Date(),+30));
+  //Filtros
+  const [filtroEmpleados, setFiltroEmpleados] = useState([]);   // array de options
+  const [filtroLocalidades, setFiltroLocalidades] = useState([]); // array de options
+  const [filtroZonas, setFiltroZonas] = useState([]); // array de options
+
+
+  // PAra el modal de referencias
+  const [openRef, setOpenRef] = useState(false);
+  const turnosLegend = useMemo(() => {
+  const map = new Map(); // key = color|nombre
+  for (const a of asignaciones) {
+    const nombre = a.turnos?.turno_nombre;
+    const color = a.turnos?.turno_color;
+    if (!nombre || !color) continue;
+    const key = `${color}|${nombre}`;
+    if (!map.has(key)) map.set(key, { nombre, color });
+  }
+  return [...map.values()].sort((x, y) => (x.nombre ?? "").localeCompare(y.nombre ?? ""));
+    }, [asignaciones]);
+
 
   // Días visibles en columnas
   const days = useMemo(() => {
@@ -190,7 +219,14 @@ export default function Planificacion() {
       (a.localidad_nombre ?? "").localeCompare(b.localidad_nombre ?? "")
     );
   }, [localidades]);
+ // Para los filtros 
+  const zonaIds = useMemo(() => new Set((filtroZonas || []).map(o => Number(o.value))), [filtroZonas]);
+  const locIds = useMemo(() => new Set((filtroLocalidades || []).map(o => Number(o.value))), [filtroLocalidades]);
+  const empIds = useMemo(() => new Set((filtroEmpleados || []).map(o => Number(o.value))), [filtroEmpleados]);
 
+  const tieneFiltroZona = zonaIds.size > 0;
+  const tieneFiltroLoc = locIds.size > 0;
+  const tieneFiltroEmp = empIds.size > 0;
   // Armamos groups para una sola tabla
   const groups = useMemo(() => {
     const out = [];
@@ -198,14 +234,18 @@ export default function Planificacion() {
     for (const loc of localidadesOrdenadas) {
       const locId = Number(loc.id_localidad);
       const locGrid = grid.get(locId) ?? new Map();
+      // Filtro por localidad
+      if (tieneFiltroLoc && !locIds.has(locId)) continue;
 
-      const empIds = empIdsPorLocalidad.get(locId) ?? new Set();
-
+      // Filtro por zona (localidad tiene que tener zona_id)
+      const zonaIdLoc =  Number(loc?.zonas?.id_zona); 
+      if (tieneFiltroZona && !zonaIds.has(zonaIdLoc)) continue;
+      
+      const empSetLocalidad = empIdsPorLocalidad.get(locId) ?? new Set();
       const emps = empleados
-        .filter((e) => empIds.has(Number(e.id_empleado)))
-        .sort((a, b) =>
-          (a.empleado_nombre_apellido ?? "").localeCompare(b.empleado_nombre_apellido ?? "")
-        );
+      .filter((e) => empSetLocalidad.has(Number(e.id_empleado)))
+      .filter((e) => !tieneFiltroEmp || empIds.has(Number(e.id_empleado)))
+      .sort((a, b) =>  (a.empleado_nombre_apellido ?? "").localeCompare(b.empleado_nombre_apellido ?? ""));
 
       // si no querés mostrar vacías:
       if (emps.length === 0) continue;
@@ -219,7 +259,7 @@ export default function Planificacion() {
     }
 
     return out;
-  }, [localidadesOrdenadas, grid, empIdsPorLocalidad, empleados]);
+  }, [localidadesOrdenadas, grid, empIdsPorLocalidad, empleados, tieneFiltroLoc, tieneFiltroZona, tieneFiltroEmp, locIds, zonaIds, empIds,]);
 
   if (loading) return <p className="p-4">Cargando...</p>;
 
@@ -233,7 +273,24 @@ export default function Planificacion() {
         </div>
         </Title>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">          
+        <div className="grid grid-cols-[repeat(auto-fit,minmax(240px,1fr))] gap-4 mb-4">          
+           <FiltroZona
+            zonas={zonas}
+            value={filtroZonas}
+            onChange={(v) => setFiltroZonas(v || [])}
+          />
+
+          <FiltroLocalidad
+            localidades={localidades}
+            value={filtroLocalidades}
+            onChange={(v) => setFiltroLocalidades(v || [])}
+          />
+
+          <FiltroEmpleado
+            empleados={empleados}
+            value={filtroEmpleados}
+            onChange={(v) => setFiltroEmpleados(v || [])}
+          />
           <FiltroFecha
             label="Desde"
             value={fechaDesde}
@@ -246,8 +303,18 @@ export default function Planificacion() {
             onChange={(d) => setFechaHasta(d)}
             placeholder="Hasta..."
           />
+          
         </div>
-   
+        <Button variant="gray"
+            onClick={() => {
+              setFiltroZonas([]);
+              setFiltroLocalidades([]);
+              setFiltroEmpleados([]);
+            }}
+            className="text-xs text-gray-600 hover:underline"
+          >
+            Limpiar filtros
+          </Button>
 
       <PlanificacionTabla
         days={days}
@@ -256,6 +323,11 @@ export default function Planificacion() {
         toYMD={toYMD}
         renderCellLines={renderCellLines}
       />
+      <ReferenciaTurnos onOpenModal={() => setOpenRef(true)}  />
+
+      {openRef && (
+        <ModalReferenciaTurnos onClose={() => setOpenRef(false)} turnosLegend={turnosLegend} />
+      )}
     </div>
   );
 }
