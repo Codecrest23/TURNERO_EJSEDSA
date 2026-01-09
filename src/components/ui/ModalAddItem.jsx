@@ -26,7 +26,7 @@ export default function AddItem({ title = "Agregar", children, onSubmit, onClose
       </Button>
 
       {open && (
-        <Modal title={title} onClose={() => setOpen(false)}>
+        <Modal title={title} onClose={() => {setOpen(false);if (onClose) onClose();}}>
           <form onSubmit={handleSubmit} className="flex flex-col max-h-[85vh]">
             {/* Contenido con scroll */}
             <div className="space-y-4 overflow-y-auto pr-2 flex-1">

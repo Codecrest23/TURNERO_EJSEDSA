@@ -20,6 +20,7 @@ import Toggle from "../components/ui/Toggle"
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { useZonas } from "../hooks/useZonas"
+import ModalWarningAsignacion from "../components/ui/ModalWarningAsignacion";
 
 
 export default function AsignacionTurnos() {
@@ -95,6 +96,53 @@ const [asignacionEdit, setAsignacionEdit] = useState({
   const turnoEdit = turnos.find((t) => Number(t.id_turno) === Number(asignacionEdit?.asignacion_turno_id));
   const esLaboralEdit = turnoEdit?.turno_es_laboral === "Si";
 
+//PAra el warning de de asignación de turnos
+const [warningAsignacion, setWarningAsignacion] = useState(null);
+// warningAsignacion = { empleadoNombre: string, conflictos: [] }
+const [pendingAsignacion, setPendingAsignacion] = useState(null);
+// pendingAsignacion = { mode: "add" | "edit", payload, id? }
+
+// el objeto que ibas a insertar
+
+const fmtAR = (ymd) => {
+  if (!ymd) return "-";
+  const [y, m, d] = ymd.slice(0, 10).split("-");
+  return `${d}/${m}/${y}`;
+};
+
+const rangesOverlap = (aDesde, aHasta, bDesde, bHasta) => {
+  // Todas "YYYY-MM-DD" => comparar strings funciona si están en ese formato
+  // Overlap si: aDesde <= bHasta && bDesde <= aHasta
+  return aDesde <= bHasta && bDesde <= aHasta;
+};
+// ACCIONES DEL MODAL WARNING
+const cerrarWarning = () => {
+  setWarningAsignacion(null);
+  setPendingAsignacion(null);
+};
+
+  const confirmarGuardarIgual = async () => {
+    if (!pendingAsignacion) return;
+
+    if (pendingAsignacion.mode === "add") {
+      await agregarAsignacion(pendingAsignacion.payload);
+      await fetchAsignaciones();
+      limpiarFormulario();
+    }
+
+    if (pendingAsignacion.mode === "edit") {
+      await modificarAsignacion(pendingAsignacion.id, pendingAsignacion.payload);
+      await fetchAsignaciones();
+      setModalEditar(false);
+      setAsignacionSeleccionada(null);
+    }
+
+    setWarningAsignacion(null);
+    setPendingAsignacion(null);
+  };
+
+//FIN warning de de asignación de turnos
+
 // RangePicker EDITAR
 const [rangoFechasEdit, setRangoFechasEdit] = useState([null, null]);
 const [fechaInicioEdit, fechaFinEdit] = rangoFechasEdit;
@@ -133,21 +181,63 @@ const abrirEditar = () => {
 
 };
 
-//HANDLER DE EDITAR CON VALIDACIÓN
-const handleEditar = async (e) => {
-  e.preventDefault();
+  //HANDLER DE EDITAR CON VALIDACIÓN
+  const handleEditar = async (e) => {
+    e.preventDefault();
 
-  const { asignacion_fecha_desde: desde, asignacion_fecha_hasta: hasta } = asignacionEdit;
+    const { asignacion_fecha_desde: desde, asignacion_fecha_hasta: hasta } = asignacionEdit;
 
-  if (!desde || !hasta) {
-    alert("Seleccioná un rango completo (Desde y Hasta).");
+    if (!desde || !hasta) {
+      alert("Seleccioná un rango completo (Desde y Hasta).");
+      return;
+    }
+    if (hasta < desde) {
+      alert("La fecha 'Hasta' no puede ser anterior a 'Desde'.");
+      return;
+    }
+  // Valida fechas asignación empleado
+  const conflictosRaw = asignaciones.filter((a) => {
+    if (Number(a.asignacion_empleado_id) !== Number(asignacionEdit.asignacion_empleado_id)) return false;
+    if (Number(a.id_asignacion) === Number(asignacionEdit.id_asignacion)) return false;
+
+    const aDesde = (a.asignacion_fecha_desde || "").slice(0, 10);
+    const aHasta = (a.asignacion_fecha_hasta || "").slice(0, 10);
+
+    return rangesOverlap(asignacionEdit.asignacion_fecha_desde, asignacionEdit.asignacion_fecha_hasta, aDesde, aHasta);
+  });
+
+  if (conflictosRaw.length > 0) {
+    const empleadoNombre =
+      conflictosRaw[0]?.empleados?.empleado_nombre_apellido ||
+      empleados.find((x) => Number(x.id_empleado) === Number(asignacionEdit.asignacion_empleado_id))?.empleado_nombre_apellido ||
+      "";
+
+    const conflictos = conflictosRaw.map((c) => ({
+      id_asignacion: c.id_asignacion,
+      localidad: c.localidades?.localidad_nombre,
+      turno: c.turnos?.turno_nombre,
+      desde: fmtAR(c.asignacion_fecha_desde),
+      hasta: fmtAR(c.asignacion_fecha_hasta),
+    }));
+    const datosLimpios = {
+      asignacion_empleado_id: Number(asignacionEdit.asignacion_empleado_id) || null,
+      asignacion_turno_id: Number(asignacionEdit.asignacion_turno_id) || null,
+      asignacion_localidad_id: Number(asignacionEdit.asignacion_localidad_id) || null,
+      asignacion_fecha_desde: asignacionEdit.asignacion_fecha_desde,
+      asignacion_fecha_hasta: asignacionEdit.asignacion_fecha_hasta,
+      asignacion_comentario: asignacionEdit.asignacion_comentario || null,
+      asignacion_estado: asignacionEdit.asignacion_estado || null,
+    };
+
+    setPendingAsignacion({
+      mode: "edit",
+      id: asignacionEdit.id_asignacion,
+      payload: datosLimpios,
+    });
+    setWarningAsignacion({ empleadoNombre, conflictos });
     return;
   }
-  if (hasta < desde) {
-    alert("La fecha 'Hasta' no puede ser anterior a 'Desde'.");
-    return;
-  }
-
+  //fin de validación de fechas empleados
   const datosLimpios = {
     asignacion_empleado_id: Number(asignacionEdit.asignacion_empleado_id) || null,
     asignacion_turno_id: Number(asignacionEdit.asignacion_turno_id) || null,
@@ -195,6 +285,61 @@ useEffect(() => {
 
   const handleAgregar = async (e) => {
     e.preventDefault()
+    // Valida si ya hay asignación para ese empleado esa fecha
+    const empId = Number(nuevaAsignacion.asignacion_empleado_id);
+    const desde = (nuevaAsignacion.asignacion_fecha_desde || "").slice(0, 10);
+    const hasta = (nuevaAsignacion.asignacion_fecha_hasta || "").slice(0, 10);
+
+    if (!empId) return false;
+
+    if (!desde || !hasta) {
+      alert("Seleccioná un rango completo (Desde y Hasta).");
+      return false;
+    }
+    if (hasta < desde) {
+      alert("La fecha 'Hasta' no puede ser anterior a 'Desde'.");
+      return false;
+    }
+
+    // 1) Buscar solapamientos para ese empleado
+    const conflictosRaw = asignaciones.filter((a) => {
+      if (Number(a.asignacion_empleado_id) !== empId) return false;
+
+      const aDesde = (a.asignacion_fecha_desde || "").slice(0, 10);
+      const aHasta = (a.asignacion_fecha_hasta || "").slice(0, 10);
+
+      return rangesOverlap(desde, hasta, aDesde, aHasta);
+    });
+
+    if (conflictosRaw.length > 0) {
+      const empleadoNombre =
+        conflictosRaw[0]?.empleados?.empleado_nombre_apellido ||
+        empleados.find((x) => Number(x.id_empleado) === empId)?.empleado_nombre_apellido ||
+        "";
+
+      const conflictos = conflictosRaw.map((c) => ({
+        id_asignacion: c.id_asignacion,
+        localidad: c.localidades?.localidad_nombre,
+        turno: c.turnos?.turno_nombre,
+        desde: fmtAR(c.asignacion_fecha_desde),
+        hasta: fmtAR(c.asignacion_fecha_hasta),
+      }));
+
+      // Esto es lo que se iba a guardar
+      const payload = {
+        ...nuevaAsignacion,
+        asignacion_empleado_id: empId,
+        asignacion_turno_id: Number(nuevaAsignacion.asignacion_turno_id),
+        asignacion_localidad_id: Number(nuevaAsignacion.asignacion_localidad_id),
+        asignacion_estado: esLaboral ? (esExceso ? "Excedido" : "Normal") : null,
+      };
+
+      setPendingAsignacion({ mode: "add", payload });
+      setWarningAsignacion({ empleadoNombre, conflictos });
+      return false; // no guardes todavía
+    }
+
+    // fin validación
     await agregarAsignacion({
       ...nuevaAsignacion,
       asignacion_empleado_id: Number(nuevaAsignacion.asignacion_empleado_id),
@@ -205,6 +350,7 @@ useEffect(() => {
 
     await fetchAsignaciones()
     limpiarFormulario();
+    return true;
   }
 
 
@@ -530,7 +676,6 @@ const zonaOk =
   {/*INCIO ELIMINAR */}
       {asignacionEliminar && (  
          <>
-    {console.log("OBJETO PARA ELIMINAR:", asignacionEliminar)}
         <Modal title="Eliminar Asignacion" onClose={() => setAsignacionEliminar(null)}>
           <p className="mb-6 text-center">
             ¿Seguro que deseas eliminar la asignación de {" "}
@@ -689,6 +834,14 @@ const zonaOk =
     </form>
   </Modal>
 )}
+    {warningAsignacion && (
+      <ModalWarningAsignacion
+        empleadoNombre={warningAsignacion.empleadoNombre}
+        conflictos={warningAsignacion.conflictos}
+        onClose={cerrarWarning}
+        onConfirm={confirmarGuardarIgual}
+      />
+    )}
     </div>
   )
 }
