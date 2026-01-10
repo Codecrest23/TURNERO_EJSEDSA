@@ -115,6 +115,37 @@ const rangesOverlap = (aDesde, aHasta, bDesde, bHasta) => {
   // Overlap si: aDesde <= bHasta && bDesde <= aHasta
   return aDesde <= bHasta && bDesde <= aHasta;
 };
+
+//Validaciones cantidad de días
+const diffDiasInclusivo = (desdeYMD, hastaYMD) => {
+  if (!desdeYMD || !hastaYMD) return null;
+  const [y1, m1, d1] = desdeYMD.split("-").map(Number);
+  const [y2, m2, d2] = hastaYMD.split("-").map(Number);
+  const a = new Date(y1, m1 - 1, d1);
+  const b = new Date(y2, m2 - 1, d2);
+  const ms = b - a;
+  if (Number.isNaN(ms)) return null;
+  // +1 para incluir ambos días (ej 01-01 a 01-01 = 1 día)
+  return Math.floor(ms / (1000 * 60 * 60 * 24)) + 1;
+};
+// ===== AVISO DÍAS (PARA EDITAR) =====
+const diasTurnoEdit = Number(turnoEdit?.turno_cantidad_dias) || 0;
+
+const diasAsignadosEdit = diffDiasInclusivo(
+  (asignacionEdit.asignacion_fecha_desde || "").slice(0, 10),
+  (asignacionEdit.asignacion_fecha_hasta || "").slice(0, 10)
+);
+
+let avisoDiasEdit = null;
+
+if (esLaboralEdit && diasTurnoEdit > 0 && diasAsignadosEdit != null) {
+  if (diasAsignadosEdit < diasTurnoEdit) {
+    avisoDiasEdit = `Estás asignando menos días (${diasAsignadosEdit}) que los del turno (${diasTurnoEdit}).`;
+  } else if (diasAsignadosEdit > diasTurnoEdit) {
+    avisoDiasEdit = `Estás asignando más días (${diasAsignadosEdit}) que los del turno (${diasTurnoEdit}).`;
+  }
+}
+
 // ACCIONES DEL MODAL WARNING
 const cerrarWarning = () => {
   setWarningAsignacion(null);
@@ -405,6 +436,30 @@ const opcionesTurnos = [
     : []),
 ];
 
+const turnoSel = turnos.find(
+  (t) => Number(t.id_turno) === Number(nuevaAsignacion.asignacion_turno_id)
+);
+
+const esLaboralTurnoSel = turnoSel?.turno_es_laboral === "Si";
+
+//Para validación de Cantiad de DIAS
+const diasTurno = Number(turnoSel?.turno_cantidad_dias) || 0;
+
+const diasAsignados = diffDiasInclusivo(
+  (nuevaAsignacion.asignacion_fecha_desde || "").slice(0, 10),
+  (nuevaAsignacion.asignacion_fecha_hasta || "").slice(0, 10)
+);
+
+let avisoDias = null;
+
+if (esLaboralTurnoSel && diasTurno > 0 && diasAsignados != null) {
+  if (diasAsignados < diasTurno) {
+    avisoDias = `Estás asignando menos días (${diasAsignados}) que los del turno (${diasTurno}).`;
+  } else if (diasAsignados > diasTurno) {
+    avisoDias = `Estás asignando más días (${diasAsignados}) que los del turno (${diasTurno}).`;
+  }
+}
+
 //  FILTRO VISUAL
 const filteredAsignaciones = asignaciones.filter((a) => {
 const empOk =
@@ -640,6 +695,11 @@ const zonaOk =
                     placeholderText="Seleccioná un rango"
                     className="w-full border p-2 rounded"
                   />
+                   {avisoDias && (
+                    <p className="text-sm text-red-600 mt-1">
+                      {avisoDias}
+                    </p>
+                  )}
                   {esLaboral && (
                     <Toggle
                       label="Días Excedido?"
@@ -798,6 +858,12 @@ const zonaOk =
         placeholderText="Seleccioná un rango"
         className="w-full border p-2 rounded"
       />
+      {avisoDiasEdit && (
+        <p className="text-sm text-red-600 mt-1">
+          {avisoDiasEdit}
+        </p>
+      )}
+
       {esLaboralEdit && (
         <Toggle
           label="Días Excedido?"
@@ -842,6 +908,7 @@ const zonaOk =
         onConfirm={confirmarGuardarIgual}
       />
     )}
+
     </div>
   )
 }
