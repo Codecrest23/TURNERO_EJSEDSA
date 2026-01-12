@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { supabase } from "../lib/supabaseClient";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import logoEjsedsa from "../assets/ejsedsa.png"
 
 export default function Login() {
   const [email, setEmail] = useState("");
@@ -45,6 +46,12 @@ export default function Login() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100">
       <form onSubmit={handleLogin} className="bg-white p-6 rounded-lg shadow-md w-96">
+        <img
+          src={logoEjsedsa}
+          alt="EJSEDSA"
+          className="h-12 mx-auto mb-4"
+        />
+
         <h2 className="text-2xl font-bold mb-4">Login</h2>
 
         {submitError && <p className="text-red-500 mb-2">{submitError}</p>}

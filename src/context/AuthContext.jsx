@@ -28,44 +28,81 @@ export function AuthProvider({ children }) {
     }
   };
 
-useEffect(() => {
-  const init = async () => {
-    setLoading(true)
-    const { data: { session } } = await supabase.auth.getSession()
-    const newUser = session?.user ?? null
-    setUser(newUser)
-    if (newUser) {
-      const { data: perfil } = await supabase
-        .from("perfiles")
-        .select("perfil_rol")
-        .eq("id_usuario", newUser.id)
-        .single()
-      setRol(perfil?.perfil_rol ?? null)
-    } else {
-      setRol(null)
+  useEffect(() => {
+    const init = async () => {
+      setLoading(true)
+      const { data: { session } } = await supabase.auth.getSession()
+      const newUser = session?.user ?? null
+      setUser(newUser)
+      if (newUser) {
+        const { data: perfil } = await supabase
+          .from("perfiles")
+          .select("perfil_rol")
+          .eq("id_usuario", newUser.id)
+          .single()
+        setRol(perfil?.perfil_rol ?? null)
+      } else {
+        setRol(null)
+      }
+      setLoading(false)
     }
-    setLoading(false)
-  }
 
-  init()
+    init()
 
-  const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
-    const newUser = session?.user ?? null
-    setUser(newUser)
-    if (newUser) {
-      supabase.from("perfiles")
-        .select("perfil_rol")
-        .eq("id_usuario", newUser.id)
-        .single()
-        .then(({ data }) => setRol(data?.perfil_rol ?? null))
-    } else {
-      setRol(null)
-    }
-    setLoading(false)
-  })
+    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
+      const newUser = session?.user ?? null
+      setUser(newUser)
+      if (newUser) {
+        supabase.from("perfiles")
+          .select("perfil_rol")
+          .eq("id_usuario", newUser.id)
+          .single()
+          .then(({ data }) => setRol(data?.perfil_rol ?? null))
+      } else {
+        setRol(null)
+      }
+      setLoading(false)
+    })
 
-  return () => listener.subscription.unsubscribe()
-}, [])
+    return () => listener.subscription.unsubscribe()
+  }, [])
+  useEffect(() => {
+    if (!user) return;
+
+    let inactivityTimer;
+
+    const logout = async () => {
+      await supabase.auth.signOut();
+      // opcional: toast / alert
+      // alert("Sesión expirada por inactividad");
+    };
+
+    const resetTimer = () => {
+      clearTimeout(inactivityTimer);
+      inactivityTimer = setTimeout(logout, 20 * 60 * 1000); // 15 minutos
+    };
+
+    const events = [
+      "mousemove",
+      "mousedown",
+      "keydown",
+      "scroll",
+      "touchstart",
+    ];
+
+    events.forEach((event) =>
+      window.addEventListener(event, resetTimer)
+    );
+
+    resetTimer(); // inicia el contador
+
+    return () => {
+      clearTimeout(inactivityTimer);
+      events.forEach((event) =>
+        window.removeEventListener(event, resetTimer)
+      );
+    };
+  }, [user]);
 
 
   return (

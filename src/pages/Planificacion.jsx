@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { useAsignaciones } from "../hooks/useAsignaciones";
 import { useLocalidades } from "../hooks/useLocalidades";
 import { useEmpleados } from "../hooks/useEmpleados";
@@ -13,8 +13,6 @@ import FiltroLocalidad from "../components/ui/Filtros/FiltroLocalidad";
 import FiltroZona from "../components/ui/Filtros/FiltroZona";
 import Button from "../components/ui/Button";
 import { usePerfil } from "../hooks/usePerfil"
-
-// ✅ ahora usamos el componente agrupado
 import PlanificacionTabla from "../components/ui/PlanificacionTabla";
 
 function toYMD(date) {
@@ -110,6 +108,23 @@ export default function Planificacion() {
   const { localidades } = useLocalidades();
   const { empleados } = useEmpleados();
   const { zonas } = useZonas();
+  // para perfil empleado no pueda acceder a otros empleados 
+  const { perfil, loadingPerfil } = usePerfil()
+  const isEmpleado = perfil?.perfil_rol === "Empleado"
+  const empleadoIdPerfil = perfil?.perfil_id_empleado ? Number(perfil.perfil_id_empleado) : null
+  // para perfil empleado no pueda acceder a otros empleados 
+  useEffect(() => {
+    if (loadingPerfil) return
+    if (!perfil) return
+
+    if (isEmpleado) {
+      const emp = empleados.find(e => Number(e.id_empleado) === empleadoIdPerfil)
+      setFiltroEmpleados([{
+        value: empleadoIdPerfil,
+        label: emp?.empleado_nombre_apellido || "Mi usuario"
+      }])
+    }
+  }, [loadingPerfil, perfil, isEmpleado, empleadoIdPerfil, empleados])
 
   // ✅ default: 3 meses hacia atrás hasta hoy (como querías antes)
   // Si querés “hoy a 3 meses atrás” y listo, uso eso:
@@ -290,8 +305,13 @@ export default function Planificacion() {
         <FiltroEmpleado
           empleados={empleados}
           value={filtroEmpleados}
-          onChange={(v) => setFiltroEmpleados(v || [])}
+          onChange={(v) => {
+            if (isEmpleado) return  // 👈 bloquea cambios
+            setFiltroEmpleados(v || [])
+          }}
+          isDisabled={isEmpleado}   // 👈 si tu componente lo soporta
         />
+
         <FiltroFecha
           label="Desde"
           value={fechaDesde}
@@ -310,7 +330,7 @@ export default function Planificacion() {
         onClick={() => {
           setFiltroZonas([]);
           setFiltroLocalidades([]);
-          setFiltroEmpleados([]);
+          if (!isEmpleado) setFiltroEmpleados([]);
         }}
         className="text-xs text-gray-600 hover:underline"
       >

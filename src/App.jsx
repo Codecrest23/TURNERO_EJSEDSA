@@ -26,9 +26,9 @@ function App() {
           <Route path="/localidades" element={<ProtectedRoute allowedRoles={[ "Admin"]}><Localidades /></ProtectedRoute>} />
           <Route path="/zonas" element={<ProtectedRoute allowedRoles={["Admin"]}><Zonas /></ProtectedRoute>} />
           <Route path="/planificacion" element={<ProtectedRoute><Planificacion /></ProtectedRoute>} />
-          <Route path="/usuarios" element={<ProtectedRoute><Usuarios/></ProtectedRoute>} />
-          <Route path="/asignacion" element={<ProtectedRoute><Asignacion/></ProtectedRoute>} />
-          <Route path="/informe" element={<ProtectedRoute><Informe/></ProtectedRoute>} />
+          <Route path="/usuarios" element={<ProtectedRoute allowedRoles={["Admin"]}><Usuarios/></ProtectedRoute>} />
+          <Route path="/asignacion" element={<ProtectedRoute allowedRoles={["Supervisor", "Admin"]}><Asignacion/></ProtectedRoute>} />
+          <Route path="/informe" element={<ProtectedRoute allowedRoles={["Supervisor", "Admin"]}><Informe/></ProtectedRoute>} />
           {/* <Route path="/login" element={<Login />} /> */}
         </Route>
       </Routes>
