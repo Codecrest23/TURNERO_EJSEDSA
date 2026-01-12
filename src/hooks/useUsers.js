@@ -41,7 +41,7 @@ async function fetchUsers() {
 
 
 
-  async function createUser({ email, password, perfil_nombre, perfil_rol }) {
+  async function createUser({ email, password, perfil_nombre, perfil_rol, perfil_id_empleado }) {
     const session = (await supabase.auth.getSession()).data.session
     const token = session?.access_token
     try {
@@ -55,7 +55,7 @@ async function fetchUsers() {
         },
         body: JSON.stringify({
           action: "create",
-          userData: { email, password, perfil_nombre, perfil_rol },
+          userData: { email, password, perfil_nombre, perfil_rol, perfil_id_empleado  },
         }),
       }
     )
@@ -74,7 +74,7 @@ async function fetchUsers() {
   }
 }
 
-  async function updateUser({ id, email, password, perfil_nombre, perfil_rol }) {
+  async function updateUser({ id, email, password, perfil_nombre, perfil_rol,perfil_id_empleado  }) {
     const session = (await supabase.auth.getSession()).data.session
     const token = session?.access_token
     const res = await fetch(
@@ -87,7 +87,7 @@ async function fetchUsers() {
         },
         body: JSON.stringify({
           action: "update",
-          userData: { id, email, password, perfil_nombre, perfil_rol },
+          userData: { id, email, password, perfil_nombre, perfil_rol, perfil_id_empleado  },
         }),
       }
     )

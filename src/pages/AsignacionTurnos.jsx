@@ -24,7 +24,7 @@ import ModalWarningAsignacion from "../components/ui/ModalWarningAsignacion";
 
 
 export default function AsignacionTurnos() {
-  const { asignaciones, loading, fetchAsignaciones, agregarAsignacion, eliminarAsignacion,modificarAsignacion} =useAsignaciones()
+  const { asignaciones, loading, fetchAsignaciones, agregarAsignacion, eliminarAsignacion, modificarAsignacion } = useAsignaciones()
   const [asignacionEliminar, setAsignacionEliminar] = useState(null)
   const { empleados } = useEmpleados()
   const { turnos } = useTurnos()
@@ -33,13 +33,13 @@ export default function AsignacionTurnos() {
   const [motivoTurnoInfo, setMotivoTurnoInfo] = useState("");
   const [detalleAsignacion, setDetalleAsignacion] = useState(null);
 
-  const [rangoFechas, setRangoFechas] = useState([null, null]); 
+  const [rangoFechas, setRangoFechas] = useState([null, null]);
   const [fechaInicio, fechaFin] = rangoFechas;
-  
+
   const [esExceso, setEsExceso] = useState(false);
   const [esExcesoEdit, setEsExcesoEdit] = useState(false);
 
-// Formatea Date -> "YYYY-MM-DD" (sin problemas de zona horaria)
+  // Formatea Date -> "YYYY-MM-DD" (sin problemas de zona horaria)
   const toYMD = (date) => {
     if (!date) return "";
     const y = date.getFullYear();
@@ -55,7 +55,7 @@ export default function AsignacionTurnos() {
     asignacion_fecha_desde: "",
     asignacion_fecha_hasta: "",
     asignacion_comentario: "",
-    asignacion_estado:"",
+    asignacion_estado: "",
   })
   const [asignacionSeleccionada, setAsignacionSeleccionada] = useState(null)
   const [esLaboral, setEsLaboral] = useState(true); // true = laboral
@@ -67,90 +67,90 @@ export default function AsignacionTurnos() {
       asignacion_fecha_desde: "",
       asignacion_fecha_hasta: "",
       asignacion_comentario: "",
-    
-      });
 
-    setMotivoTurnoInfo("");  
+    });
+
+    setMotivoTurnoInfo("");
     setEsLaboral(true);
     setRangoFechas([null, null]);
     setEsExceso(false);
   };
 
-const [filtroEmpleados, setFiltroEmpleados] = useState([]);
-const [filtroLocalidades, setFiltroLocalidades] = useState([]);
-const [filtroTurnos, setFiltroTurnos] = useState([]);
-const [filtroZonas, setFiltroZonas] = useState([]);
+  const [filtroEmpleados, setFiltroEmpleados] = useState([]);
+  const [filtroLocalidades, setFiltroLocalidades] = useState([]);
+  const [filtroTurnos, setFiltroTurnos] = useState([]);
+  const [filtroZonas, setFiltroZonas] = useState([]);
 
-//Editar ASIGNACIÓN
+  //Editar ASIGNACIÓN
 
-const [modalEditar, setModalEditar] = useState(false);
+  const [modalEditar, setModalEditar] = useState(false);
 
-const [asignacionEdit, setAsignacionEdit] = useState({
-  asignacion_empleado_id: "",
-  asignacion_turno_id: "",
-  asignacion_localidad_id: "",
-  asignacion_fecha_desde: "",
-  asignacion_fecha_hasta: "",
-  asignacion_comentario: "",
-});
+  const [asignacionEdit, setAsignacionEdit] = useState({
+    asignacion_empleado_id: "",
+    asignacion_turno_id: "",
+    asignacion_localidad_id: "",
+    asignacion_fecha_desde: "",
+    asignacion_fecha_hasta: "",
+    asignacion_comentario: "",
+  });
   const turnoEdit = turnos.find((t) => Number(t.id_turno) === Number(asignacionEdit?.asignacion_turno_id));
   const esLaboralEdit = turnoEdit?.turno_es_laboral === "Si";
 
-//PAra el warning de de asignación de turnos
-const [warningAsignacion, setWarningAsignacion] = useState(null);
-// warningAsignacion = { empleadoNombre: string, conflictos: [] }
-const [pendingAsignacion, setPendingAsignacion] = useState(null);
-// pendingAsignacion = { mode: "add" | "edit", payload, id? }
+  //PAra el warning de de asignación de turnos
+  const [warningAsignacion, setWarningAsignacion] = useState(null);
+  // warningAsignacion = { empleadoNombre: string, conflictos: [] }
+  const [pendingAsignacion, setPendingAsignacion] = useState(null);
+  // pendingAsignacion = { mode: "add" | "edit", payload, id? }
 
-// el objeto que ibas a insertar
+  // el objeto que ibas a insertar
 
-const fmtAR = (ymd) => {
-  if (!ymd) return "-";
-  const [y, m, d] = ymd.slice(0, 10).split("-");
-  return `${d}/${m}/${y}`;
-};
+  const fmtAR = (ymd) => {
+    if (!ymd) return "-";
+    const [y, m, d] = ymd.slice(0, 10).split("-");
+    return `${d}/${m}/${y}`;
+  };
 
-const rangesOverlap = (aDesde, aHasta, bDesde, bHasta) => {
-  // Todas "YYYY-MM-DD" => comparar strings funciona si están en ese formato
-  // Overlap si: aDesde <= bHasta && bDesde <= aHasta
-  return aDesde <= bHasta && bDesde <= aHasta;
-};
+  const rangesOverlap = (aDesde, aHasta, bDesde, bHasta) => {
+    // Todas "YYYY-MM-DD" => comparar strings funciona si están en ese formato
+    // Overlap si: aDesde <= bHasta && bDesde <= aHasta
+    return aDesde <= bHasta && bDesde <= aHasta;
+  };
 
-//Validaciones cantidad de días
-const diffDiasInclusivo = (desdeYMD, hastaYMD) => {
-  if (!desdeYMD || !hastaYMD) return null;
-  const [y1, m1, d1] = desdeYMD.split("-").map(Number);
-  const [y2, m2, d2] = hastaYMD.split("-").map(Number);
-  const a = new Date(y1, m1 - 1, d1);
-  const b = new Date(y2, m2 - 1, d2);
-  const ms = b - a;
-  if (Number.isNaN(ms)) return null;
-  // +1 para incluir ambos días (ej 01-01 a 01-01 = 1 día)
-  return Math.floor(ms / (1000 * 60 * 60 * 24)) + 1;
-};
-// ===== AVISO DÍAS (PARA EDITAR) =====
-const diasTurnoEdit = Number(turnoEdit?.turno_cantidad_dias) || 0;
+  //Validaciones cantidad de días
+  const diffDiasInclusivo = (desdeYMD, hastaYMD) => {
+    if (!desdeYMD || !hastaYMD) return null;
+    const [y1, m1, d1] = desdeYMD.split("-").map(Number);
+    const [y2, m2, d2] = hastaYMD.split("-").map(Number);
+    const a = new Date(y1, m1 - 1, d1);
+    const b = new Date(y2, m2 - 1, d2);
+    const ms = b - a;
+    if (Number.isNaN(ms)) return null;
+    // +1 para incluir ambos días (ej 01-01 a 01-01 = 1 día)
+    return Math.floor(ms / (1000 * 60 * 60 * 24)) + 1;
+  };
+  // ===== AVISO DÍAS (PARA EDITAR) =====
+  const diasTurnoEdit = Number(turnoEdit?.turno_cantidad_dias) || 0;
 
-const diasAsignadosEdit = diffDiasInclusivo(
-  (asignacionEdit.asignacion_fecha_desde || "").slice(0, 10),
-  (asignacionEdit.asignacion_fecha_hasta || "").slice(0, 10)
-);
+  const diasAsignadosEdit = diffDiasInclusivo(
+    (asignacionEdit.asignacion_fecha_desde || "").slice(0, 10),
+    (asignacionEdit.asignacion_fecha_hasta || "").slice(0, 10)
+  );
 
-let avisoDiasEdit = null;
+  let avisoDiasEdit = null;
 
-if (esLaboralEdit && diasTurnoEdit > 0 && diasAsignadosEdit != null) {
-  if (diasAsignadosEdit < diasTurnoEdit) {
-    avisoDiasEdit = `Estás asignando menos días (${diasAsignadosEdit}) que los del turno (${diasTurnoEdit}).`;
-  } else if (diasAsignadosEdit > diasTurnoEdit) {
-    avisoDiasEdit = `Estás asignando más días (${diasAsignadosEdit}) que los del turno (${diasTurnoEdit}).`;
+  if (esLaboralEdit && diasTurnoEdit > 0 && diasAsignadosEdit != null) {
+    if (diasAsignadosEdit < diasTurnoEdit) {
+      avisoDiasEdit = `Estás asignando menos días (${diasAsignadosEdit}) que los del turno (${diasTurnoEdit}).`;
+    } else if (diasAsignadosEdit > diasTurnoEdit) {
+      avisoDiasEdit = `Estás asignando más días (${diasAsignadosEdit}) que los del turno (${diasTurnoEdit}).`;
+    }
   }
-}
 
-// ACCIONES DEL MODAL WARNING
-const cerrarWarning = () => {
-  setWarningAsignacion(null);
-  setPendingAsignacion(null);
-};
+  // ACCIONES DEL MODAL WARNING
+  const cerrarWarning = () => {
+    setWarningAsignacion(null);
+    setPendingAsignacion(null);
+  };
 
   const confirmarGuardarIgual = async () => {
     if (!pendingAsignacion) return;
@@ -172,45 +172,45 @@ const cerrarWarning = () => {
     setPendingAsignacion(null);
   };
 
-//FIN warning de de asignación de turnos
+  //FIN warning de de asignación de turnos
 
-// RangePicker EDITAR
-const [rangoFechasEdit, setRangoFechasEdit] = useState([null, null]);
-const [fechaInicioEdit, fechaFinEdit] = rangoFechasEdit;
+  // RangePicker EDITAR
+  const [rangoFechasEdit, setRangoFechasEdit] = useState([null, null]);
+  const [fechaInicioEdit, fechaFinEdit] = rangoFechasEdit;
 
-// "YYYY-MM-DD" -> Date (sin corrimientos raros por timezone)
-const ymdToDate = (ymd) => {
-  if (!ymd) return null;
-  const [y, m, d] = ymd.split("-").map(Number);
-  return new Date(y, m - 1, d);
-};
-//FUNCIÓN PARA ABRIR EL MODAL DE EDITAR.
-const abrirEditar = () => {
-  if (!asignacionSeleccionada) return;
+  // "YYYY-MM-DD" -> Date (sin corrimientos raros por timezone)
+  const ymdToDate = (ymd) => {
+    if (!ymd) return null;
+    const [y, m, d] = ymd.split("-").map(Number);
+    return new Date(y, m - 1, d);
+  };
+  //FUNCIÓN PARA ABRIR EL MODAL DE EDITAR.
+  const abrirEditar = () => {
+    if (!asignacionSeleccionada) return;
 
-  // ojo: en tu tabla la asignación trae id_asignacion y los campos asignacion_* :contentReference[oaicite:3]{index=3}
-  const a = asignacionSeleccionada;
+    // ojo: en tu tabla la asignación trae id_asignacion y los campos asignacion_* :contentReference[oaicite:3]{index=3}
+    const a = asignacionSeleccionada;
 
-  setAsignacionEdit({
-    id_asignacion: a.id_asignacion,
-    asignacion_empleado_id: a.asignacion_empleado_id ?? "",
-    asignacion_turno_id: a.asignacion_turno_id ?? "",
-    asignacion_localidad_id: a.asignacion_localidad_id ?? "",
-    asignacion_fecha_desde: (a.asignacion_fecha_desde || "").slice(0, 10),
-    asignacion_fecha_hasta: (a.asignacion_fecha_hasta || "").slice(0, 10),
-    asignacion_comentario: a.asignacion_comentario || "",
-    asignacion_estado:a.asignacion_estado || "",
-  });
+    setAsignacionEdit({
+      id_asignacion: a.id_asignacion,
+      asignacion_empleado_id: a.asignacion_empleado_id ?? "",
+      asignacion_turno_id: a.asignacion_turno_id ?? "",
+      asignacion_localidad_id: a.asignacion_localidad_id ?? "",
+      asignacion_fecha_desde: (a.asignacion_fecha_desde || "").slice(0, 10),
+      asignacion_fecha_hasta: (a.asignacion_fecha_hasta || "").slice(0, 10),
+      asignacion_comentario: a.asignacion_comentario || "",
+      asignacion_estado: a.asignacion_estado || "",
+    });
 
-  setRangoFechasEdit([
-    ymdToDate((a.asignacion_fecha_desde || "").slice(0, 10)),
-    ymdToDate((a.asignacion_fecha_hasta || "").slice(0, 10)),
-  ]);
+    setRangoFechasEdit([
+      ymdToDate((a.asignacion_fecha_desde || "").slice(0, 10)),
+      ymdToDate((a.asignacion_fecha_hasta || "").slice(0, 10)),
+    ]);
 
-  setModalEditar(true);
-  setEsExcesoEdit(a.asignacion_estado === "Excedido");
+    setModalEditar(true);
+    setEsExcesoEdit(a.asignacion_estado === "Excedido");
 
-};
+  };
 
   //HANDLER DE EDITAR CON VALIDACIÓN
   const handleEditar = async (e) => {
@@ -226,30 +226,49 @@ const abrirEditar = () => {
       alert("La fecha 'Hasta' no puede ser anterior a 'Desde'.");
       return;
     }
-  // Valida fechas asignación empleado
-  const conflictosRaw = asignaciones.filter((a) => {
-    if (Number(a.asignacion_empleado_id) !== Number(asignacionEdit.asignacion_empleado_id)) return false;
-    if (Number(a.id_asignacion) === Number(asignacionEdit.id_asignacion)) return false;
+    // Valida fechas asignación empleado
+    const conflictosRaw = asignaciones.filter((a) => {
+      if (Number(a.asignacion_empleado_id) !== Number(asignacionEdit.asignacion_empleado_id)) return false;
+      if (Number(a.id_asignacion) === Number(asignacionEdit.id_asignacion)) return false;
 
-    const aDesde = (a.asignacion_fecha_desde || "").slice(0, 10);
-    const aHasta = (a.asignacion_fecha_hasta || "").slice(0, 10);
+      const aDesde = (a.asignacion_fecha_desde || "").slice(0, 10);
+      const aHasta = (a.asignacion_fecha_hasta || "").slice(0, 10);
 
-    return rangesOverlap(asignacionEdit.asignacion_fecha_desde, asignacionEdit.asignacion_fecha_hasta, aDesde, aHasta);
-  });
+      return rangesOverlap(asignacionEdit.asignacion_fecha_desde, asignacionEdit.asignacion_fecha_hasta, aDesde, aHasta);
+    });
 
-  if (conflictosRaw.length > 0) {
-    const empleadoNombre =
-      conflictosRaw[0]?.empleados?.empleado_nombre_apellido ||
-      empleados.find((x) => Number(x.id_empleado) === Number(asignacionEdit.asignacion_empleado_id))?.empleado_nombre_apellido ||
-      "";
+    if (conflictosRaw.length > 0) {
+      const empleadoNombre =
+        conflictosRaw[0]?.empleados?.empleado_nombre_apellido ||
+        empleados.find((x) => Number(x.id_empleado) === Number(asignacionEdit.asignacion_empleado_id))?.empleado_nombre_apellido ||
+        "";
 
-    const conflictos = conflictosRaw.map((c) => ({
-      id_asignacion: c.id_asignacion,
-      localidad: c.localidades?.localidad_nombre,
-      turno: c.turnos?.turno_nombre,
-      desde: fmtAR(c.asignacion_fecha_desde),
-      hasta: fmtAR(c.asignacion_fecha_hasta),
-    }));
+      const conflictos = conflictosRaw.map((c) => ({
+        id_asignacion: c.id_asignacion,
+        localidad: c.localidades?.localidad_nombre,
+        turno: c.turnos?.turno_nombre,
+        desde: fmtAR(c.asignacion_fecha_desde),
+        hasta: fmtAR(c.asignacion_fecha_hasta),
+      }));
+      const datosLimpios = {
+        asignacion_empleado_id: Number(asignacionEdit.asignacion_empleado_id) || null,
+        asignacion_turno_id: Number(asignacionEdit.asignacion_turno_id) || null,
+        asignacion_localidad_id: Number(asignacionEdit.asignacion_localidad_id) || null,
+        asignacion_fecha_desde: asignacionEdit.asignacion_fecha_desde,
+        asignacion_fecha_hasta: asignacionEdit.asignacion_fecha_hasta,
+        asignacion_comentario: asignacionEdit.asignacion_comentario || null,
+        asignacion_estado: asignacionEdit.asignacion_estado || null,
+      };
+
+      setPendingAsignacion({
+        mode: "edit",
+        id: asignacionEdit.id_asignacion,
+        payload: datosLimpios,
+      });
+      setWarningAsignacion({ empleadoNombre, conflictos });
+      return;
+    }
+    //fin de validación de fechas empleados
     const datosLimpios = {
       asignacion_empleado_id: Number(asignacionEdit.asignacion_empleado_id) || null,
       asignacion_turno_id: Number(asignacionEdit.asignacion_turno_id) || null,
@@ -258,59 +277,40 @@ const abrirEditar = () => {
       asignacion_fecha_hasta: asignacionEdit.asignacion_fecha_hasta,
       asignacion_comentario: asignacionEdit.asignacion_comentario || null,
       asignacion_estado: asignacionEdit.asignacion_estado || null,
+      // NO mandes asignacion_fecha_Hora_modificacion si lo vas a hacer en DB
     };
 
-    setPendingAsignacion({
-      mode: "edit",
-      id: asignacionEdit.id_asignacion,
-      payload: datosLimpios,
-    });
-    setWarningAsignacion({ empleadoNombre, conflictos });
-    return;
-  }
-  //fin de validación de fechas empleados
-  const datosLimpios = {
-    asignacion_empleado_id: Number(asignacionEdit.asignacion_empleado_id) || null,
-    asignacion_turno_id: Number(asignacionEdit.asignacion_turno_id) || null,
-    asignacion_localidad_id: Number(asignacionEdit.asignacion_localidad_id) || null,
-    asignacion_fecha_desde: asignacionEdit.asignacion_fecha_desde,
-    asignacion_fecha_hasta: asignacionEdit.asignacion_fecha_hasta,
-    asignacion_comentario: asignacionEdit.asignacion_comentario || null,
-    asignacion_estado:asignacionEdit.asignacion_estado || null,
-    // NO mandes asignacion_fecha_Hora_modificacion si lo vas a hacer en DB
+    await modificarAsignacion(asignacionEdit.id_asignacion, datosLimpios);
+
+    await fetchAsignaciones();
+    setModalEditar(false);
+    setAsignacionSeleccionada(null);
   };
 
-  await modificarAsignacion(asignacionEdit.id_asignacion, datosLimpios);
-
-  await fetchAsignaciones();
-  setModalEditar(false);
-  setAsignacionSeleccionada(null); 
-};
-
-//Fin Editar ASignación
+  //Fin Editar ASignación
 
 
-//agrgar para que automaticamente se coloque la localidad 
-useEffect(() => {
-  if (!nuevaAsignacion.asignacion_empleado_id) return;
+  //agrgar para que automaticamente se coloque la localidad 
+  useEffect(() => {
+    if (!nuevaAsignacion.asignacion_empleado_id) return;
 
-  const empleado = empleados.find(
-    (e) => e.id_empleado == nuevaAsignacion.asignacion_empleado_id
-  );
+    const empleado = empleados.find(
+      (e) => e.id_empleado == nuevaAsignacion.asignacion_empleado_id
+    );
 
-  if (!empleado) return;
+    if (!empleado) return;
 
-  setNuevaAsignacion((prev) => ({
-    ...prev,
-    asignacion_localidad_id: empleado.empleado_id_localidad || "",
-    asignacion_turno_id: empleado.empleado_id_turno || "",
-  }));
+    setNuevaAsignacion((prev) => ({
+      ...prev,
+      asignacion_localidad_id: empleado.empleado_id_localidad || "",
+      asignacion_turno_id: empleado.empleado_id_turno || "",
+    }));
     //Completar también el motivo solo informativo
-      const turno = turnos.find(
-    (t) => t.id_turno == empleado.empleado_id_turno
-  );
-  setMotivoTurnoInfo(turno?.turno_motivo || "");
-}, [nuevaAsignacion.asignacion_empleado_id, empleados, turnos]);
+    const turno = turnos.find(
+      (t) => t.id_turno == empleado.empleado_id_turno
+    );
+    setMotivoTurnoInfo(turno?.turno_motivo || "");
+  }, [nuevaAsignacion.asignacion_empleado_id, empleados, turnos]);
 
   if (loading) return <p>Cargando...</p>
 
@@ -376,7 +376,7 @@ useEffect(() => {
       asignacion_empleado_id: Number(nuevaAsignacion.asignacion_empleado_id),
       asignacion_turno_id: Number(nuevaAsignacion.asignacion_turno_id),
       asignacion_localidad_id: Number(nuevaAsignacion.asignacion_localidad_id),
-      asignacion_estado: esLaboral ? (esExceso ? "Excedido" :  "Normal") : null,
+      asignacion_estado: esLaboral ? (esExceso ? "Excedido" : "Normal") : null,
     })
 
     await fetchAsignaciones()
@@ -385,104 +385,104 @@ useEffect(() => {
   }
 
 
-// OPCIONES AGRUPADAS PARA EL SELECT DE TURNOS
-const turnosFiltrados = turnos.filter((t) => {
-  const coincideLaboral = esLaboral
-    ? t.turno_es_laboral === "Si"
-    : t.turno_es_laboral === "No";
+  // OPCIONES AGRUPADAS PARA EL SELECT DE TURNOS
+  const turnosFiltrados = turnos.filter((t) => {
+    const coincideLaboral = esLaboral
+      ? t.turno_es_laboral === "Si"
+      : t.turno_es_laboral === "No";
 
-  return coincideLaboral;
-});
+    return coincideLaboral;
+  });
 
-const locID = Number(nuevaAsignacion.asignacion_localidad_id);
+  const locID = Number(nuevaAsignacion.asignacion_localidad_id);
 
-// crudos
-const turnosLocalidad = turnosFiltrados.filter(
-  (t) => Number(t.turno_id_localidad) === locID
-);
+  // crudos
+  const turnosLocalidad = turnosFiltrados.filter(
+    (t) => Number(t.turno_id_localidad) === locID
+  );
 
-const otrosTurnos = turnosFiltrados.filter(
-  (t) => Number(t.turno_id_localidad) !== locID
-);
+  const otrosTurnos = turnosFiltrados.filter(
+    (t) => Number(t.turno_id_localidad) !== locID
+  );
 
-// 🔹 opciones formateadas para react-select
-const turnosLocalidadOptions = turnosLocalidad.map((t) => ({
-  value: t.id_turno,
-  label: t.turno_nombre,
-}));
+  // 🔹 opciones formateadas para react-select
+  const turnosLocalidadOptions = turnosLocalidad.map((t) => ({
+    value: t.id_turno,
+    label: t.turno_nombre,
+  }));
 
-const otrosTurnosOptions = otrosTurnos.map((t) => ({
-  value: t.id_turno,
-  label: t.turno_nombre,
-}));
+  const otrosTurnosOptions = otrosTurnos.map((t) => ({
+    value: t.id_turno,
+    label: t.turno_nombre,
+  }));
 
-// 🔹 grupos
-const opcionesTurnos = [
-  ...(turnosLocalidadOptions.length > 0
-    ? [
+  // 🔹 grupos
+  const opcionesTurnos = [
+    ...(turnosLocalidadOptions.length > 0
+      ? [
         {
           label: "Turnos de esta Localidad",
           options: turnosLocalidadOptions,
         },
       ]
-    : []),
-  ...(otrosTurnosOptions.length > 0
-    ? [
+      : []),
+    ...(otrosTurnosOptions.length > 0
+      ? [
         {
           label: "Otros Turnos",
           options: otrosTurnosOptions,
         },
       ]
-    : []),
-];
+      : []),
+  ];
 
-const turnoSel = turnos.find(
-  (t) => Number(t.id_turno) === Number(nuevaAsignacion.asignacion_turno_id)
-);
+  const turnoSel = turnos.find(
+    (t) => Number(t.id_turno) === Number(nuevaAsignacion.asignacion_turno_id)
+  );
 
-const esLaboralTurnoSel = turnoSel?.turno_es_laboral === "Si";
+  const esLaboralTurnoSel = turnoSel?.turno_es_laboral === "Si";
 
-//Para validación de Cantiad de DIAS
-const diasTurno = Number(turnoSel?.turno_cantidad_dias) || 0;
+  //Para validación de Cantiad de DIAS
+  const diasTurno = Number(turnoSel?.turno_cantidad_dias) || 0;
 
-const diasAsignados = diffDiasInclusivo(
-  (nuevaAsignacion.asignacion_fecha_desde || "").slice(0, 10),
-  (nuevaAsignacion.asignacion_fecha_hasta || "").slice(0, 10)
-);
+  const diasAsignados = diffDiasInclusivo(
+    (nuevaAsignacion.asignacion_fecha_desde || "").slice(0, 10),
+    (nuevaAsignacion.asignacion_fecha_hasta || "").slice(0, 10)
+  );
 
-let avisoDias = null;
+  let avisoDias = null;
 
-if (esLaboralTurnoSel && diasTurno > 0 && diasAsignados != null) {
-  if (diasAsignados < diasTurno) {
-    avisoDias = `Estás asignando menos días (${diasAsignados}) que los del turno (${diasTurno}).`;
-  } else if (diasAsignados > diasTurno) {
-    avisoDias = `Estás asignando más días (${diasAsignados}) que los del turno (${diasTurno}).`;
+  if (esLaboralTurnoSel && diasTurno > 0 && diasAsignados != null) {
+    if (diasAsignados < diasTurno) {
+      avisoDias = `Estás asignando menos días (${diasAsignados}) que los del turno (${diasTurno}).`;
+    } else if (diasAsignados > diasTurno) {
+      avisoDias = `Estás asignando más días (${diasAsignados}) que los del turno (${diasTurno}).`;
+    }
   }
-}
 
-//  FILTRO VISUAL
-const filteredAsignaciones = asignaciones.filter((a) => {
-const empOk =
-  filtroEmpleados.length === 0 ||
-  filtroEmpleados.some((f) => Number(f.value) === Number(a.asignacion_empleado_id));
+  //  FILTRO VISUAL
+  const filteredAsignaciones = asignaciones.filter((a) => {
+    const empOk =
+      filtroEmpleados.length === 0 ||
+      filtroEmpleados.some((f) => Number(f.value) === Number(a.asignacion_empleado_id));
 
-const locOk =
-  filtroLocalidades.length === 0 ||
-  filtroLocalidades.some((f) => Number(f.value) === Number(a.asignacion_localidad_id));
+    const locOk =
+      filtroLocalidades.length === 0 ||
+      filtroLocalidades.some((f) => Number(f.value) === Number(a.asignacion_localidad_id));
 
-const turnoOk =
-  filtroTurnos.length === 0 ||
-  filtroTurnos.some((f) => Number(f.value) === Number(a.asignacion_turno_id));
+    const turnoOk =
+      filtroTurnos.length === 0 ||
+      filtroTurnos.some((f) => Number(f.value) === Number(a.asignacion_turno_id));
 
-const zonaOk =
-  filtroZonas.length === 0 ||
-  filtroZonas.some((f) => Number(f.value) === Number(a.localidades?.zonas?.id_zona));
-  
-  return empOk && locOk && turnoOk && zonaOk;
-  
-});
+    const zonaOk =
+      filtroZonas.length === 0 ||
+      filtroZonas.some((f) => Number(f.value) === Number(a.localidades?.zonas?.id_zona));
 
-// OPCIONES AGRUPADAS PARA EL SELECT DE TURNOS
+    return empOk && locOk && turnoOk && zonaOk;
+
+  });
+
+  // OPCIONES AGRUPADAS PARA EL SELECT DE TURNOS
 
   return (
     <div className="max-w-8xl mx-auto space-y-2">
@@ -492,37 +492,37 @@ const zonaOk =
           Asignación de Turnos
         </div>
       </Title>
-     
-<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
-{/* INICIO DE FILTROS */}
-  <FiltroEmpleado
-    empleados={empleados}
-    value={filtroEmpleados}
-    onChange={setFiltroEmpleados}
-  />
 
-  <FiltroLocalidad
-    localidades={localidades}
-    value={filtroLocalidades}
-    onChange={setFiltroLocalidades}
-  />
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+        {/* INICIO DE FILTROS */}
+        <FiltroEmpleado
+          empleados={empleados}
+          value={filtroEmpleados}
+          onChange={setFiltroEmpleados}
+        />
 
-  <FiltroTurno
-    turnos={turnos}
-    value={filtroTurnos}
-    onChange={setFiltroTurnos}
-  />
+        <FiltroLocalidad
+          localidades={localidades}
+          value={filtroLocalidades}
+          onChange={setFiltroLocalidades}
+        />
 
-  <FiltroZona
-    zonas={zonas}
-    value={filtroZonas}
-    onChange={setFiltroZonas}
-  />
-</div>
+        <FiltroTurno
+          turnos={turnos}
+          value={filtroTurnos}
+          onChange={setFiltroTurnos}
+        />
 
-{/* INICIO DE TABLA */}
+        <FiltroZona
+          zonas={zonas}
+          value={filtroZonas}
+          onChange={setFiltroZonas}
+        />
+      </div>
+
+      {/* INICIO DE TABLA */}
       <Table
-        headers={["Zona","Localidad","Empleado","Turno","Motivo","Desde","Hasta","Comentario","Detalles"]}>
+        headers={["Zona", "Localidad", "Empleado", "Turno", "Motivo", "Desde", "Hasta", "Comentario", "Detalles"]}>
         {filteredAsignaciones.map((a) => (
           <tr
             key={a.id_asignacion}
@@ -533,11 +533,10 @@ const zonaOk =
                   : a
               )
             }
-            className={`border-b hover:bg-gray-100 cursor-pointer ${
-              asignacionSeleccionada?.id_asignacion === a.id_asignacion
+            className={`border-b hover:bg-gray-100 cursor-pointer ${asignacionSeleccionada?.id_asignacion === a.id_asignacion
                 ? "bg-blue-100"
                 : ""
-            }`}
+              }`}
           >
             <td className="px-6 py-3">{a.localidades?.zonas?.zona_nombre}</td>
             <td className="px-6 py-3">{a.localidades?.localidad_nombre}</td>
@@ -560,14 +559,14 @@ const zonaOk =
         ))}
       </Table>
 
-{/* INICIO BOTONES */}
+      {/* INICIO BOTONES */}
       <div className="flex justify-end gap-2 mt-4">
         <Button
-        variant="warning"
-        onClick={abrirEditar}
-        disabled={!asignacionSeleccionada}
-        className={!asignacionSeleccionada ? "opacity-50 cursor-not-allowed" : ""}>
-        Modificar
+          variant="warning"
+          onClick={abrirEditar}
+          disabled={!asignacionSeleccionada}
+          className={!asignacionSeleccionada ? "opacity-50 cursor-not-allowed" : ""}>
+          Modificar
         </Button>
         <Button
           variant="danger"
@@ -576,338 +575,342 @@ const zonaOk =
           className={!asignacionSeleccionada ? "opacity-50 cursor-not-allowed" : ""}>
           Eliminar
         </Button>
-{/* INICIO DE AGREGAR */}
-              <ModalAddItem
-                title="Nueva Asignación"
-                buttonLabel="Agregar"
-                onSubmit={handleAgregar}
-                onClose={limpiarFormulario}
-              >
-                <Toggle
-                  label="Es laboral"
-                  checked={esLaboral}
-                  //onChange={setEsLaboral}
-                  onChange={(val) => {
-                  setEsLaboral(val);
+        {/* INICIO DE AGREGAR */}
+        <ModalAddItem
+          title="Nueva Asignación"
+          buttonLabel="Agregar"
+          onSubmit={handleAgregar}
+          onClose={limpiarFormulario}
+        >
+          <Toggle
+            label="Es laboral"
+            checked={esLaboral}
+            //onChange={setEsLaboral}
+            onChange={(val) => {
+              setEsLaboral(val);
 
-                  if (!val) {setEsExceso(false);setNuevaAsignacion((prev) => ({...prev,asignacion_estado: null,}));
-                  } else {
-                    setNuevaAsignacion((prev) => ({ ...prev, asignacion_estado: "Normal" }));}}}
-                />
+              if (!val) {
+                setEsExceso(false); setNuevaAsignacion((prev) => ({ ...prev, asignacion_estado: null, }));
+              } else {
+                setNuevaAsignacion((prev) => ({ ...prev, asignacion_estado: "Normal" }));
+              }
+            }}
+          />
 
-                  <Select
-                    options={empleados.map(e => ({
-                      value: e.id_empleado,
-                      label: e.empleado_nombre_apellido
-                    }))}
-                    onChange={(opt) =>
-                      setNuevaAsignacion({
-                        ...nuevaAsignacion,
-                        asignacion_empleado_id: opt?.value,
-                      })
-                    }
-                    placeholder="Seleccionar Empleado"
-                    isSearchable
-                    required
-                  />
+          <Select
+            options={empleados.map(e => ({
+              value: e.id_empleado,
+              label: e.empleado_nombre_apellido
+            }))}
+            onChange={(opt) =>
+              setNuevaAsignacion({
+                ...nuevaAsignacion,
+                asignacion_empleado_id: opt?.value,
+              })
+            }
+            placeholder="Seleccionar Empleado"
+            isSearchable
+            required
+          />
 
-                  <Select
-                    className="w-full"
-                    placeholder="Seleccionar Localidad"
-                    isSearchable={true}
-                    value={
-                      localidades
-                        .map(l => ({
-                          value: l.id_localidad,
-                          label: l.localidad_nombre
-                        }))
-                        .find(opt => opt.value == nuevaAsignacion.asignacion_localidad_id) || null
-                    }
-                    onChange={(opt) =>
-                      setNuevaAsignacion({
-                        ...nuevaAsignacion,
-                        asignacion_localidad_id: opt?.value || ""
-                      })
-                    }
-                    options={localidades.map(l => ({
-                      value: l.id_localidad,
-                      label: l.localidad_nombre
-                    }))}
-                    required
+          <Select
+            className="w-full"
+            placeholder="Seleccionar Localidad"
+            isSearchable={true}
+            value={
+              localidades
+                .map(l => ({
+                  value: l.id_localidad,
+                  label: l.localidad_nombre
+                }))
+                .find(opt => opt.value == nuevaAsignacion.asignacion_localidad_id) || null
+            }
+            onChange={(opt) =>
+              setNuevaAsignacion({
+                ...nuevaAsignacion,
+                asignacion_localidad_id: opt?.value || ""
+              })
+            }
+            options={localidades.map(l => ({
+              value: l.id_localidad,
+              label: l.localidad_nombre
+            }))}
+            required
 
-                  />
-              <Select
-                className="w-full"
-                placeholder="Seleccionar Turno"
-                isSearchable={true}
-                value={(() => {
-                  const allOptions = [...turnosLocalidadOptions, ...otrosTurnosOptions];
-                  return (
-                    allOptions.find(
-                      (opt) => opt.value == nuevaAsignacion.asignacion_turno_id
-                    ) || null
-                  );
-                })()}
-                onChange={(opt) => {
-                  const turno = turnos.find((t) => t.id_turno == opt?.value);
+          />
+          <Select
+            className="w-full"
+            placeholder="Seleccionar Turno"
+            isSearchable={true}
+            value={(() => {
+              const allOptions = [...turnosLocalidadOptions, ...otrosTurnosOptions];
+              return (
+                allOptions.find(
+                  (opt) => opt.value == nuevaAsignacion.asignacion_turno_id
+                ) || null
+              );
+            })()}
+            onChange={(opt) => {
+              const turno = turnos.find((t) => t.id_turno == opt?.value);
 
-                  setNuevaAsignacion({
-                    ...nuevaAsignacion,
-                    asignacion_turno_id: opt?.value || "",
-                  });
+              setNuevaAsignacion({
+                ...nuevaAsignacion,
+                asignacion_turno_id: opt?.value || "",
+              });
 
-                  setMotivoTurnoInfo(turno?.turno_motivo || "");
-                }}
-                options={opcionesTurnos}
-              />
+              setMotivoTurnoInfo(turno?.turno_motivo || "");
+            }}
+            options={opcionesTurnos}
+          />
 
 
 
-                  <label className="block text-sm font-medium text-gray-700 mt-2">
-                    Motivo del turno
-                  </label>
-                  <input
-                    type="text"
-                    className="w-full border p-2 rounded bg-gray-100 text-gray-600"
-                    value={motivoTurnoInfo}
-                    disabled
-                  />
-                  
-                  <label className="block text-sm font-medium text-gray-700 mt-2">
-                    Rango de fechas (Desde - Hasta)
-                  </label>
+          <label className="block text-sm font-medium text-gray-700 mt-2">
+            Motivo del turno
+          </label>
+          <input
+            type="text"
+            className="w-full border p-2 rounded bg-gray-100 text-gray-600"
+            value={motivoTurnoInfo}
+            disabled
+          />
 
-                  <DatePicker
-                    selectsRange
-                    startDate={fechaInicio}
-                    endDate={fechaFin}
-                    onChange={(update) => {
-                      setRangoFechas(update);
+          <label className="block text-sm font-medium text-gray-700 mt-2">
+            Rango de fechas (Desde - Hasta)
+          </label>
 
-                      const [start, end] = update;
-                      setNuevaAsignacion((prev) => ({
-                        ...prev,
-                        asignacion_fecha_desde: toYMD(start),
-                        asignacion_fecha_hasta: toYMD(end),
-                      }));
-                    }}
-                    dateFormat="dd/MM/yyyy"
-                    placeholderText="Seleccioná un rango"
-                    className="w-full border p-2 rounded"
-                  />
-                   {avisoDias && (
-                    <p className="text-sm text-red-600 mt-1">
-                      {avisoDias}
-                    </p>
-                  )}
-                  {esLaboral && (
-                    <Toggle
-                      label="Días Excedido?"
-                      checked={esExceso}
-                      onChange={(val) => {
-                        setEsExceso(val);
-                        setNuevaAsignacion((prev) => ({
-                          ...prev,
-                          asignacion_estado: val ? "Excedido" : "Normal",
-                        }));
-                      }}
-                    />
-                  )}
-                  <textarea
-                    className="w-full border p-2 rounded"
-                    placeholder="Comentario"
-                    value={nuevaAsignacion.asignacion_comentario}
-                    onChange={(e) =>
-                      setNuevaAsignacion({
-                        ...nuevaAsignacion,
-                        asignacion_comentario: e.target.value,
-                      })
-                    }
-                  />
+          <DatePicker
+            selectsRange
+            startDate={fechaInicio}
+            endDate={fechaFin}
+            onChange={(update) => {
+              setRangoFechas(update);
+
+              const [start, end] = update;
+              setNuevaAsignacion((prev) => ({
+                ...prev,
+                asignacion_fecha_desde: toYMD(start),
+                asignacion_fecha_hasta: toYMD(end),
+              }));
+            }}
+            dateFormat="dd/MM/yyyy"
+            placeholderText="Seleccioná un rango"
+            className="w-full border p-2 rounded"
+          />
+          {avisoDias && (
+            <p className="text-sm text-red-600 mt-1">
+              {avisoDias}
+            </p>
+          )}
+          {esLaboral && (
+            <Toggle
+              label="Días Excedido?"
+              checked={esExceso}
+              onChange={(val) => {
+                setEsExceso(val);
+                setNuevaAsignacion((prev) => ({
+                  ...prev,
+                  asignacion_estado: val ? "Excedido" : "Normal",
+                }));
+              }}
+            />
+          )}
+          <textarea
+            className="w-full border p-2 rounded"
+            placeholder="Comentario"
+            value={nuevaAsignacion.asignacion_comentario}
+            onChange={(e) =>
+              setNuevaAsignacion({
+                ...nuevaAsignacion,
+                asignacion_comentario: e.target.value,
+              })
+            }
+          />
         </ModalAddItem>
       </div>
-{/* INICIO DETALLE */}
+      {/* INICIO DETALLE */}
       {detalleAsignacion && (
-          <ModalDetalleAsignacion
-            asignacion={detalleAsignacion}
-            onClose={() => setDetalleAsignacion(null)}
-          />
-        )}
-  {/*INCIO ELIMINAR */}
-      {asignacionEliminar && (  
-         <>
-        <Modal title="Eliminar Asignacion" onClose={() => setAsignacionEliminar(null)}>
-          <p className="mb-6 text-center">
-            ¿Seguro que deseas eliminar la asignación de {" "}
-            <b>{asignacionEliminar?.empleados?.empleado_nombre_apellido}</b>?<br />
-            Turno: <b>{asignacionEliminar?.turnos?.turno_nombre}</b><br />
-            Desde: <b>{new Date(asignacionEliminar?.asignacion_fecha_desde).toLocaleDateString("es-AR")}</b><br />
-            Hasta: <b>{new Date(asignacionEliminar?.asignacion_fecha_hasta).toLocaleDateString("es-AR")}</b>
-          </p>
-          <div className="flex justify-center gap-2">
-            <Button variant="gray" onClick={() => setAsignacionEliminar(null)}>
-              Cancelar
-            </Button>
-            <Button
-              variant="danger"
-              onClick={() => {
-                eliminarAsignacion(asignacionEliminar.id_asignacion)
-                setAsignacionEliminar(null)
-              }}
-            >
-              Sí, eliminar
-            </Button>
-          </div>
-        </Modal>  </>
-      )}
-  {/*INCIO MODIFICAR */}
-  {modalEditar && (
-  <Modal title="Editar Asignación" onClose={() => {setModalEditar(false); setAsignacionSeleccionada(null); }}>
-    <form
-      onSubmit={handleEditar}
-      className="space-y-3"
-    >
-      {/* Empleado */}
-      <Select
-        options={empleados.map(e => ({
-          value: e.id_empleado,
-          label: e.empleado_nombre_apellido
-        }))}
-        value={empleados
-          .map(e => ({ value: e.id_empleado, label: e.empleado_nombre_apellido }))
-          .find(opt => opt.value == asignacionEdit.asignacion_empleado_id) || null
-        }
-        onChange={(opt) =>
-          setAsignacionEdit(prev => ({
-            ...prev,
-            asignacion_empleado_id: opt?.value || ""
-          }))
-        }
-        placeholder="Seleccionar Empleado"
-        isSearchable
-        required
-      />
-
-      {/* Localidad */}
-      <Select
-        placeholder="Seleccionar Localidad"
-        isSearchable
-        value={localidades
-          .map(l => ({ value: l.id_localidad, label: l.localidad_nombre }))
-          .find(opt => opt.value == asignacionEdit.asignacion_localidad_id) || null
-        }
-        onChange={(opt) =>
-          setAsignacionEdit(prev => ({
-            ...prev,
-            asignacion_localidad_id: opt?.value || ""
-          }))
-        }
-        options={localidades.map(l => ({
-          value: l.id_localidad,
-          label: l.localidad_nombre
-        }))}
-        required
-      />
-
-      {/* Turno (podés reutilizar tus opciones agrupadas, pero ojo que hoy se calculan con nuevaAsignacion.asignacion_localidad_id) :contentReference[oaicite:6]{index=6} */}
-      {/* Para mínimo cambio, lo dejamos sin agrupación: */}
-      <Select
-        placeholder="Seleccionar Turno"
-        isSearchable
-        value={turnos
-          .map(t => ({ value: t.id_turno, label: t.turno_nombre }))
-          .find(opt => opt.value == asignacionEdit.asignacion_turno_id) || null
-        }
-        onChange={(opt) => {
-          const turno = turnos.find((t) => t.id_turno == opt?.value);
-          setAsignacionEdit(prev => ({
-            ...prev,
-            asignacion_turno_id: opt?.value || "",
-            asignacion_estado: turno?.turno_es_laboral === "Si" ? prev.asignacion_estado || "Normal" : null,
-          }))
-          if (turno?.turno_es_laboral !== "Si") {
-          setEsExcesoEdit(false);}
-        }}
-        options={turnos.map(t => ({
-          value: t.id_turno,
-          label: t.turno_nombre
-        }))}
-        required
-      />
-
-      {/* Range Picker */}
-      <label className="block text-sm font-medium text-gray-700">
-        Rango de fechas (Desde - Hasta)
-      </label>
-
-      <DatePicker
-        selectsRange
-        startDate={fechaInicioEdit}
-        endDate={fechaFinEdit}
-        onChange={(update) => {
-          setRangoFechasEdit(update);
-
-          const [start, end] = update;
-          setAsignacionEdit((prev) => ({
-            ...prev,
-            asignacion_fecha_desde: toYMD(start),
-            asignacion_fecha_hasta: toYMD(end),
-          }));
-        }}
-        dateFormat="dd/MM/yyyy"
-        placeholderText="Seleccioná un rango"
-        className="w-full border p-2 rounded"
-      />
-      {avisoDiasEdit && (
-        <p className="text-sm text-red-600 mt-1">
-          {avisoDiasEdit}
-        </p>
-      )}
-
-      {esLaboralEdit && (
-        <Toggle
-          label="Días Excedido?"
-          checked={esExcesoEdit}
-          onChange={(val) => {
-            setEsExcesoEdit(val);
-            setAsignacionEdit((prev) => ({
-              ...prev,
-              asignacion_estado: val ? "Excedido" : "Normal",
-            }));
-          }}
+        <ModalDetalleAsignacion
+          asignacion={detalleAsignacion}
+          onClose={() => setDetalleAsignacion(null)}
         />
       )}
-      <textarea
-        className="w-full border p-2 rounded"
-        placeholder="Comentario"
-        value={asignacionEdit.asignacion_comentario}
-        onChange={(e) =>
-          setAsignacionEdit(prev => ({
-            ...prev,
-            asignacion_comentario: e.target.value
-          }))
-        }
-      />
+      {/*INCIO ELIMINAR */}
+      {asignacionEliminar && (
+        <>
+          <Modal title="Eliminar Asignacion" onClose={() => setAsignacionEliminar(null)}>
+            <p className="mb-6 text-center">
+              ¿Seguro que deseas eliminar la asignación de {" "}
+              <b>{asignacionEliminar?.empleados?.empleado_nombre_apellido}</b>?<br />
+              Turno: <b>{asignacionEliminar?.turnos?.turno_nombre}</b><br />
+              Desde: <b>{new Date(asignacionEliminar?.asignacion_fecha_desde).toLocaleDateString("es-AR")}</b><br />
+              Hasta: <b>{new Date(asignacionEliminar?.asignacion_fecha_hasta).toLocaleDateString("es-AR")}</b>
+            </p>
+            <div className="flex justify-center gap-2">
+              <Button variant="gray" onClick={() => setAsignacionEliminar(null)}>
+                Cancelar
+              </Button>
+              <Button
+                variant="danger"
+                onClick={() => {
+                  eliminarAsignacion(asignacionEliminar.id_asignacion)
+                  setAsignacionEliminar(null)
+                }}
+              >
+                Sí, eliminar
+              </Button>
+            </div>
+          </Modal>  </>
+      )}
+      {/*INCIO MODIFICAR */}
+      {modalEditar && (
+        <Modal title="Editar Asignación" onClose={() => { setModalEditar(false); setAsignacionSeleccionada(null); }}>
+          <form
+            onSubmit={handleEditar}
+            className="space-y-3"
+          >
+            {/* Empleado */}
+            <Select
+              options={empleados.map(e => ({
+                value: e.id_empleado,
+                label: e.empleado_nombre_apellido
+              }))}
+              value={empleados
+                .map(e => ({ value: e.id_empleado, label: e.empleado_nombre_apellido }))
+                .find(opt => opt.value == asignacionEdit.asignacion_empleado_id) || null
+              }
+              onChange={(opt) =>
+                setAsignacionEdit(prev => ({
+                  ...prev,
+                  asignacion_empleado_id: opt?.value || ""
+                }))
+              }
+              placeholder="Seleccionar Empleado"
+              isSearchable
+              required
+            />
 
-      <div className="flex justify-end gap-2 pt-2">
-        <Button variant="gray" type="button" onClick={() => setModalEditar(false)}>
-          Cancelar
-        </Button>
-        <Button variant="primary" type="submit">
-          Guardar
-        </Button>
-      </div>
-    </form>
-  </Modal>
-)}
-    {warningAsignacion && (
-      <ModalWarningAsignacion
-        empleadoNombre={warningAsignacion.empleadoNombre}
-        conflictos={warningAsignacion.conflictos}
-        onClose={cerrarWarning}
-        onConfirm={confirmarGuardarIgual}
-      />
-    )}
+            {/* Localidad */}
+            <Select
+              placeholder="Seleccionar Localidad"
+              isSearchable
+              value={localidades
+                .map(l => ({ value: l.id_localidad, label: l.localidad_nombre }))
+                .find(opt => opt.value == asignacionEdit.asignacion_localidad_id) || null
+              }
+              onChange={(opt) =>
+                setAsignacionEdit(prev => ({
+                  ...prev,
+                  asignacion_localidad_id: opt?.value || ""
+                }))
+              }
+              options={localidades.map(l => ({
+                value: l.id_localidad,
+                label: l.localidad_nombre
+              }))}
+              required
+            />
+
+            {/* Turno (podés reutilizar tus opciones agrupadas, pero ojo que hoy se calculan con nuevaAsignacion.asignacion_localidad_id) :contentReference[oaicite:6]{index=6} */}
+            {/* Para mínimo cambio, lo dejamos sin agrupación: */}
+            <Select
+              placeholder="Seleccionar Turno"
+              isSearchable
+              value={turnos
+                .map(t => ({ value: t.id_turno, label: t.turno_nombre }))
+                .find(opt => opt.value == asignacionEdit.asignacion_turno_id) || null
+              }
+              onChange={(opt) => {
+                const turno = turnos.find((t) => t.id_turno == opt?.value);
+                setAsignacionEdit(prev => ({
+                  ...prev,
+                  asignacion_turno_id: opt?.value || "",
+                  asignacion_estado: turno?.turno_es_laboral === "Si" ? prev.asignacion_estado || "Normal" : null,
+                }))
+                if (turno?.turno_es_laboral !== "Si") {
+                  setEsExcesoEdit(false);
+                }
+              }}
+              options={turnos.map(t => ({
+                value: t.id_turno,
+                label: t.turno_nombre
+              }))}
+              required
+            />
+
+            {/* Range Picker */}
+            <label className="block text-sm font-medium text-gray-700">
+              Rango de fechas (Desde - Hasta)
+            </label>
+
+            <DatePicker
+              selectsRange
+              startDate={fechaInicioEdit}
+              endDate={fechaFinEdit}
+              onChange={(update) => {
+                setRangoFechasEdit(update);
+
+                const [start, end] = update;
+                setAsignacionEdit((prev) => ({
+                  ...prev,
+                  asignacion_fecha_desde: toYMD(start),
+                  asignacion_fecha_hasta: toYMD(end),
+                }));
+              }}
+              dateFormat="dd/MM/yyyy"
+              placeholderText="Seleccioná un rango"
+              className="w-full border p-2 rounded"
+            />
+            {avisoDiasEdit && (
+              <p className="text-sm text-red-600 mt-1">
+                {avisoDiasEdit}
+              </p>
+            )}
+
+            {esLaboralEdit && (
+              <Toggle
+                label="Días Excedido?"
+                checked={esExcesoEdit}
+                onChange={(val) => {
+                  setEsExcesoEdit(val);
+                  setAsignacionEdit((prev) => ({
+                    ...prev,
+                    asignacion_estado: val ? "Excedido" : "Normal",
+                  }));
+                }}
+              />
+            )}
+            <textarea
+              className="w-full border p-2 rounded"
+              placeholder="Comentario"
+              value={asignacionEdit.asignacion_comentario}
+              onChange={(e) =>
+                setAsignacionEdit(prev => ({
+                  ...prev,
+                  asignacion_comentario: e.target.value
+                }))
+              }
+            />
+
+            <div className="flex justify-end gap-2 pt-2">
+              <Button variant="gray" type="button" onClick={() => setModalEditar(false)}>
+                Cancelar
+              </Button>
+              <Button variant="primary" type="submit">
+                Guardar
+              </Button>
+            </div>
+          </form>
+        </Modal>
+      )}
+      {warningAsignacion && (
+        <ModalWarningAsignacion
+          empleadoNombre={warningAsignacion.empleadoNombre}
+          conflictos={warningAsignacion.conflictos}
+          onClose={cerrarWarning}
+          onConfirm={confirmarGuardarIgual}
+        />
+      )}
 
     </div>
   )

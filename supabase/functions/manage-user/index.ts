@@ -36,7 +36,13 @@ serve(async (req) => {
     // 🔸 CREAR USUARIO
     // ======================================================
     if (action === "create") {
-      const { email, password, perfil_nombre, perfil_rol } = userData
+      const { email, password, perfil_nombre, perfil_rol, perfil_id_empleado } = userData
+      if (perfil_rol === "Empleado" && !perfil_id_empleado) {
+        return new Response(JSON.stringify({ error: "Debe seleccionar un empleado para el rol Empleado" }), {
+          status: 400,
+          headers: corsHeaders(),
+        })
+      }
 
       // Crear usuario en auth
       const { data: newUser, error: authError } = await supabase.auth.admin.createUser({
@@ -58,6 +64,7 @@ serve(async (req) => {
           id_usuario: newUser.user.id,
           perfil_nombre,
           perfil_rol,
+          perfil_id_empleado: perfil_rol === "Empleado" ? perfil_id_empleado : null,
         },
       ])
 
@@ -78,7 +85,14 @@ serve(async (req) => {
     // 🔸 ACTUALIZAR USUARIO
     // ======================================================
     if (action === "update") {
-      const { id, email, password, perfil_nombre, perfil_rol } = userData
+      const { id, email, password, perfil_nombre, perfil_rol, perfil_id_empleado  } = userData
+    
+      if (perfil_rol === "Empleado" && !perfil_id_empleado) {
+      return new Response(JSON.stringify({ error: "Debe seleccionar un empleado para el rol Empleado" }), {
+        status: 400,
+        headers: corsHeaders(),
+      })
+    }
 
       // Actualizar datos en auth
       const { error: authError } = await supabase.auth.admin.updateUserById(id, {
@@ -99,6 +113,7 @@ serve(async (req) => {
         .update({
           perfil_nombre,
           perfil_rol,
+          perfil_id_empleado: perfil_rol === "Empleado" ? perfil_id_empleado : null,
         })
         .eq("id_usuario", id)
 
@@ -151,7 +166,7 @@ serve(async (req) => {
     if (action === "list") {
       const { data: perfiles, error: perfilesError } = await supabase
         .from("perfiles")
-        .select("id_usuario, perfil_nombre, perfil_rol")
+        .select("id_usuario, perfil_nombre, perfil_rol,perfil_id_empleado")
         .order("perfil_nombre", { ascending: true })
 
       if (perfilesError) {
