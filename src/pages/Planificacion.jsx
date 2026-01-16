@@ -280,7 +280,7 @@ export default function Planificacion() {
   if (loading) return <p className="p-4">Cargando...</p>;
 
   return (
-    <div className="max-w-8xl mx-auto space-y-2">
+    <div className="max-w-8xl mx-auto space-y-2 px-1 sm:px-0">
 
       <Title>
         <div className="flex items-center gap-z">
@@ -289,7 +289,8 @@ export default function Planificacion() {
         </div>
       </Title>
 
-      <div className="grid grid-cols-[repeat(auto-fit,minmax(240px,1fr))] gap-4 mb-4">
+      {/* <div className="grid grid-cols-[repeat(auto-fit,minmax(240px,1fr))] gap-4 mb-4"> */}
+      <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-4 mb-4">
         <FiltroZona
           zonas={zonas}
           value={filtroZonas}

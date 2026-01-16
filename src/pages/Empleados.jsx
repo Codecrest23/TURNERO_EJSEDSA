@@ -106,7 +106,7 @@ const limpiarFormulario = () => {
   }
 
   return (
-    <div className="max-w-6xl mx-auto space-y-8">
+    <div className="max-w-8xl mx-auto space-y-2 px-1 sm:px-10">
       <Title>
         <div className="flex items-center gap-2">
           <IdCardLanyard className="w-6 h-6 text-gray-700" />

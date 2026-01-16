@@ -18,10 +18,12 @@ export default function ModalDetalleAsignacion({ asignacion, onClose }) {
   }
       onClose={onClose}
     >
-      <div className="space-y-6 p-3 text-gray-800 ">
+      {/* <div className="space-y-6 p-3 text-gray-800 "> */}
+<div className="space-y-4 sm:space-y-4 sm:p-4 text-gray-800">
 
         {/* GRID PRINCIPAL */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-10 gap-y-5">
+        {/* <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-10 gap-y-5"> */}
+<div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 sm:gap-x-10 gap-y-3 sm:gap-y-5">
 
           <Detail label="Empleado" value={empleado?.empleado_nombre_apellido} />
           <Detail label="Localidad" value={localidad?.localidad_nombre} />
@@ -71,8 +73,11 @@ export default function ModalDetalleAsignacion({ asignacion, onClose }) {
 function Detail({ label, value }) {
   return (
     <div className="flex flex-col">
-      <span className="text-[18px] font-semibold text-gray-700">{label}</span>
-      <span className="text-[19px] text-gray-800">{value}</span>
+      {/* <span className="text-[18px] font-semibold text-gray-700">{label}</span>
+      <span className="text-[19px] text-gray-800">{value}</span> */}
+      <span className="text-[16px] sm:text-[18px] font-semibold text-gray-700">{label}</span>
+<span className="text-[17px] sm:text-[19px] text-gray-800 break-words">{value}</span>
+
     </div>
   );
 }

@@ -89,7 +89,7 @@ export default function InformeHistorico() {
 
 
   return (
-    <div className="max-w-8xl mx-auto space-y-2">
+    <div className="max-w-8xl mx-auto space-y-2 px-1 sm:px-0">
       <Title>
         <div className="flex items-center gap-z">
           <SquareStack className="w-6 h-6 text-gray-700" />
@@ -98,7 +98,7 @@ export default function InformeHistorico() {
       </Title>
 
       {/* ✅ grid responsive para 4 filtros */}
-      <div className="grid grid-cols-[repeat(auto-fit,minmax(240px,1fr))] gap-4 mb-4">
+      <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-4 mb-4">
         <FiltroEmpleado empleados={empleados} value={filtroEmpleados} onChange={setFiltroEmpleados} />
         <FiltroLocalidad localidades={localidades} value={filtroLocalidades} onChange={setFiltroLocalidades} />
         {/* <FiltroTurno turnos={turnos} value={filtroTurnos} onChange={setFiltroTurnos} /> */}

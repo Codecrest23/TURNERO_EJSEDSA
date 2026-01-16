@@ -85,7 +85,7 @@ export default function FuncionesSectores() {
   }
 
   return (
-    <div className="max-w-6xl mx-auto space-y-8">
+    <div className="max-w-8xl mx-auto space-y-2 px-1 sm:px-10">
       <Title>Funciones y Sectores</Title>
       <Subtitle>Gestión de funciones y sectores del personal</Subtitle>
 

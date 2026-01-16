@@ -77,7 +77,7 @@ export default function ModalDetalleTurno({ turno, onClose }) {
           <span className="text-[15px] font-semibold text-gray-700">
             Notas / Comentarios
           </span>
-          <p className="border rounded bg-gray-50 p-4 mt-2 whitespace-pre-wrap text-gray-700 text-base leading-relaxed shadow-sm">
+          <p className="border rounded bg-gray-50 p-4 mt-2 whitespace-pre-wrap text-gray-700 text-base leading-relaxed shadow-sm break-words">
             {turno_comentarios || "Sin comentarios"}
           </p>
         </div>

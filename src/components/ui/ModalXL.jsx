@@ -1,13 +1,15 @@
 export default function ModalXL({ title, children, onClose }) {
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-black/50 backdrop-blur-sm z-50">
-      
+
       {/* CONTENEDOR DEL MODAL → versión personalizada */}
       <div className="
         bg-white p-6 rounded-xl shadow-xl 
-        w-full max-w-4xl         /* ancho más grande */
+        w-[95vw] sm:w-full sm:max-w-4xl
+        p-4 sm:p-6       /* ancho más grande */
+         overflow-hidden
       ">
-        
+
         {/* HEADER */}
         <div className="flex justify-between items-center mb-4 rounded-t-xl">
           <h2 className="text-xl font-bold">{title}</h2>
@@ -20,7 +22,7 @@ export default function ModalXL({ title, children, onClose }) {
         </div>
 
         {/* CONTENIDO */}
-        <div className="px-6 py-4 max-h-[80vh] overflow-y-auto rounded-b-xl"> {/* padding derecho para scroll */}
+        <div className="px-4 sm:px-6 py-3 sm:py-4 max-h-[80vh] overflow-y-auto "> {/* padding derecho para scroll */}
           {children}
         </div>
 

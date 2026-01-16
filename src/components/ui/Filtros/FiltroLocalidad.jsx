@@ -12,7 +12,7 @@ export default function FiltroLocalidad({ localidades, value, onChange }) {
       options={options}
       value={value}
       onChange={onChange}
-      placeholder="Filtrar por localidad"
+      placeholder="Filtrar localidad"
     />
   );
 }

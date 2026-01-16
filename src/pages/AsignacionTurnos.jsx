@@ -485,7 +485,7 @@ export default function AsignacionTurnos() {
   // OPCIONES AGRUPADAS PARA EL SELECT DE TURNOS
 
   return (
-    <div className="max-w-8xl mx-auto space-y-2">
+    <div className="max-w-8xl mx-auto space-y-2 px-1 sm:px-0">
       <Title>
         <div className="flex items-center gap-z">
           <CalendarClock className="w-6 h-6 text-gray-700" />
@@ -493,7 +493,8 @@ export default function AsignacionTurnos() {
         </div>
       </Title>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+      
+      <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-4">
         {/* INICIO DE FILTROS */}
         <FiltroEmpleado
           empleados={empleados}
