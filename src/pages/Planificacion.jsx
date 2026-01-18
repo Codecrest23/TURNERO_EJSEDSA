@@ -129,7 +129,7 @@ export default function Planificacion() {
   // ✅ default: 3 meses hacia atrás hasta hoy (como querías antes)
   // Si querés “hoy a 3 meses atrás” y listo, uso eso:
   const [fechaDesde, setFechaDesde] = useState(() => startOfDay(addDays(new Date(), -30)));
-  const [fechaHasta, setFechaHasta] = useState(() => startOfDay(new Date(), +30));
+  const [fechaHasta, setFechaHasta] = useState(() => startOfDay(addDays(new Date(),+30)));
   //Filtros
   const [filtroEmpleados, setFiltroEmpleados] = useState([]);   // array de options
   const [filtroLocalidades, setFiltroLocalidades] = useState([]); // array de options

@@ -8,113 +8,86 @@ export function useUsers() {
 
   useEffect(() => {
     fetchUsers()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-async function fetchUsers() {
-  setLoading(true)
-  const session = (await supabase.auth.getSession()).data.session
-  const token = session?.access_token
+  async function callManageUser(payload) {
+    // invoke manda el JWT automáticamente si hay sesión
+    const { data, error } = await supabase.functions.invoke("manage-user", {
+      body: payload,
+    })
 
-  const res = await fetch(
-    `${import.meta.env.VITE_SUPABASE_FUNCTIONS_URL}/manage-user`,
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify({ action: "list" }),
+    if (error) {
+      // error.message suele ser lo más útil
+      throw new Error(error.message || "Error llamando a manage-user")
     }
-  )
 
-  const out = await res.json()
-  if (!res.ok) {
-    console.error(out)
-    setError(out.error || "Error obteniendo usuarios")
-    setLoading(false)
-    return
+    // Si tu función devuelve { error: "..." } con status 200, lo atrapamos igual
+    if (data?.error) {
+      throw new Error(data.error)
+    }
+
+    return data
   }
 
-  setUsers(out.users || [])
-  setLoading(false)
-}
-
-
+  async function fetchUsers() {
+    setLoading(true)
+    setError(null)
+    try {
+      const out = await callManageUser({ action: "list" })
+      setUsers(out?.users || [])
+    } catch (e) {
+      console.error(e)
+      setUsers([])
+      setError(e.message || "Error obteniendo usuarios")
+    } finally {
+      setLoading(false)
+    }
+  }
 
   async function createUser({ email, password, perfil_nombre, perfil_rol, perfil_id_empleado }) {
-    const session = (await supabase.auth.getSession()).data.session
-    const token = session?.access_token
+    setError(null)
     try {
-    const res = await fetch(
-      `${import.meta.env.VITE_SUPABASE_FUNCTIONS_URL}/manage-user`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          action: "create",
-          userData: { email, password, perfil_nombre, perfil_rol, perfil_id_empleado  },
-        }),
-      }
-    )
-
-    const out = await res.json()
-
-    if (!res.ok) {
-      return { error: out.error || "Error creando usuario" }
+      const out = await callManageUser({
+        action: "create",
+        userData: { email, password, perfil_nombre, perfil_rol, perfil_id_empleado },
+      })
+      await fetchUsers()
+      return { data: out }
+    } catch (e) {
+      console.error(e)
+      return { error: e.message || "Error creando usuario" }
     }
-
-    await fetchUsers()
-    return { data: out }
-
-  } catch (err) {
-    return { error: err.message }
   }
-}
 
-  async function updateUser({ id, email, password, perfil_nombre, perfil_rol,perfil_id_empleado  }) {
-    const session = (await supabase.auth.getSession()).data.session
-    const token = session?.access_token
-    const res = await fetch(
-      `${import.meta.env.VITE_SUPABASE_FUNCTIONS_URL}/manage-user`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          action: "update",
-          userData: { id, email, password, perfil_nombre, perfil_rol, perfil_id_empleado  },
-        }),
-      }
-    )
-    const out = await res.json()
-    if (!res.ok) throw new Error(out.error || "Error actualizando usuario")
-    await fetchUsers()
-    return out
+  async function updateUser({ id, email, password, perfil_nombre, perfil_rol, perfil_id_empleado }) {
+    setError(null)
+    try {
+      const out = await callManageUser({
+        action: "update",
+        userData: { id, email, password, perfil_nombre, perfil_rol, perfil_id_empleado },
+      })
+      await fetchUsers()
+      return out
+    } catch (e) {
+      console.error(e)
+      throw new Error(e.message || "Error actualizando usuario")
+    }
   }
 
   async function deleteUser(id) {
-    const session = (await supabase.auth.getSession()).data.session
-    const token = session?.access_token
-    const res = await fetch(
-      `${import.meta.env.VITE_SUPABASE_FUNCTIONS_URL}/manage-user`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ action: "delete", userData: { id } }),
-      }
-    )
-    const out = await res.json()
-    if (!res.ok) throw new Error(out.error || "Error eliminando usuario")
-    await fetchUsers()
-    return out
+    setError(null)
+    try {
+      const out = await callManageUser({
+        action: "delete",
+        userData: { id },
+      })
+      await fetchUsers()
+      return out
+    } catch (e) {
+      console.error(e)
+      throw new Error(e.message || "Error eliminando usuario")
+    }
   }
 
   return { users, loading, error, fetchUsers, createUser, updateUser, deleteUser }

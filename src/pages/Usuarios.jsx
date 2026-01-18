@@ -15,6 +15,7 @@ export default function Usuarios() {
   const [editing, setEditing] = useState(null)
   const [usuarioEliminar, setUsuarioEliminar] = useState(null)
   const [pkErrorMsg, setPkErrorMsg] = useState("")
+  const [formError, setFormError] = useState("")
   // Para perfil empleados ppoder elegir en el select
   const { empleados, loading: loadingEmpleados } = useEmpleados()
   const resetForm = () => {
@@ -31,9 +32,15 @@ export default function Usuarios() {
 
   const handleCreate = async (e) => {
     e.preventDefault()
+    setFormError("")
 
+    // ✅ VALIDACIÓN DE PASSWORD (ACÁ)
+    if (!form.password || form.password.length < 6) {
+      setFormError("La contraseña debe tener al menos 6 caracteres.")
+      return false
+    }
     const result = await createUser(form)
-    console.log("FORM CREATE:", form, result)
+    // console.log("FORM CREATE:", form, result)
 
     if (result?.error) {
       // Traducción “humana” de errores comunes
@@ -42,14 +49,19 @@ export default function Usuarios() {
       return // 👈 importante: no resetees el form si falló
     }
 
-    setForm({ email: "", password: "", perfil_nombre: "", perfil_rol: "Empleado", perfil_id_empleado: null })
+    resetForm()
+
   }
 
 
   const handleUpdate = async (e) => {
     e.preventDefault()
-
+if (editing?.password && editing.password.length < 6) {
+    setFormError("La contraseña debe tener al menos 6 caracteres.")
+    return
+  }
     try {
+
       const result = await updateUser(editing)
 
       // si tu updateUser devuelve { error: ... }
@@ -102,7 +114,7 @@ export default function Usuarios() {
           )
 
           return (
-            <tr key={u.id_usuario} className="border-t">
+            <tr key={u.id} className="border-t">
               <td className="p-2">{u.perfil_nombre}</td>
               <td className="p-2">{u.perfil_rol}</td>
 
@@ -122,7 +134,7 @@ export default function Usuarios() {
                   className="px-3 py-1 rounded bg-yellow-500 text-white"
                   onClick={() =>
                     setEditing({
-                      id: u.id_usuario,
+                      id: u.id,
                       perfil_nombre: u.perfil_nombre,
                       perfil_rol: u.perfil_rol,
                       perfil_id_empleado: u.perfil_id_empleado ?? null,
@@ -159,9 +171,13 @@ export default function Usuarios() {
             className="border rounded px-3 py-2 w-full"
             required />
           <input placeholder="Password" type="password"
-            value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })}
+            value={form.password}
+            onChange={(e) => setForm({ ...form, password: e.target.value })}
             className="border rounded px-3 py-2 w-full"
             required />
+          {formError && (
+            <p className="text-xs text-red-600">{formError}</p>
+          )}
           <input placeholder="Nombre"
             value={form.perfil_nombre} onChange={(e) => setForm({ ...form, perfil_nombre: e.target.value.toUpperCase() })}
             className="border rounded px-3 py-2 w-full"
@@ -187,7 +203,7 @@ export default function Usuarios() {
                 }}
                 required
               >
-                <option value="">Seleccionar empleado...</option>
+                <option value="">Seleccionar empleado</option>
 
                 {empleados.map((emp) => (
                   <option key={emp.id_empleado} value={emp.id_empleado}>
@@ -196,10 +212,10 @@ export default function Usuarios() {
                 ))}
               </select>
 
-              {/* debug 1 minuto */}
+              {/* debug 1 minuto
               <div className="text-[11px] text-gray-500">
                 seleccionado: {String(form.perfil_id_empleado)}
-              </div>
+              </div> */}
             </div>
           )}
 
@@ -241,7 +257,7 @@ export default function Usuarios() {
                   }}
                   required
                 >
-                  <option value="">Seleccionar empleado...</option>
+                  <option value="">Seleccionar empleado</option>
 
                   {empleados.map((emp) => (
                     <option key={emp.id_empleado} value={emp.id_empleado}>
@@ -260,6 +276,9 @@ export default function Usuarios() {
               type="password"
               value={editing.password || ""}
               onChange={(e) => setEditing({ ...editing, password: e.target.value })} />
+            {formError && (
+              <p className="text-xs text-red-600">{formError}</p>
+            )}
             <div className="flex justify-end gap-2">
               <Button variant="gray" onClick={() => setEditing(null)}>
                 Cancelar
@@ -287,7 +306,7 @@ export default function Usuarios() {
             <Button
               variant="danger"
               onClick={async () => {
-                await deleteUser(usuarioEliminar.id_usuario)
+                await deleteUser(usuarioEliminar.id)
                 setUsuarioEliminar(null)
               }}
             >
