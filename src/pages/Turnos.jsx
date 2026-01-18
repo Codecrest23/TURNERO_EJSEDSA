@@ -13,7 +13,7 @@ import ModalDetalleTurno from "../components/ui/ModalDetalleTurno"
 import { supabase } from "../lib/supabaseClient";
 import ModalFKError from "../components/ui/ModalFKError";
 import ModalPKError from "../components/ui/ModalPKError"
-
+//coment turno
 export default function Turnos() {
   const {
     turnos,
@@ -281,7 +281,7 @@ if (TurnoEditando.tieneHorarios) {
           className={!TurnoSeleccionado ? "opacity-50 cursor-not-allowed" : ""}
         >
           Eliminar
-        </Button>
+        </Button> 
 
 <ModalAddItem title="Agregar Turno/Licencia" buttonLabel="Agregar" onSubmit={handleAgregar}>
       <TurnoForm turno={nuevoTurno} setTurno={setNuevoTurno} localidades={localidades} />
