@@ -22,6 +22,11 @@ function toYMD(date) {
   const d = String(date.getDate()).padStart(2, "0");
   return `${y}-${m}-${d}`;
 }
+// para que no me muestre un día menos porque es UTC (entre las 9 y las 12)
+function ymdToLocalDate(ymd) {
+  const [y, m, d] = ymd.split("-");
+  return new Date(y, m - 1, d); // local, sin UTC
+}
 
 function dayLabel(date) {
   // Inicial del día: D L M M J V S
@@ -176,8 +181,8 @@ export default function Planificacion() {
       const locId = Number(a.asignacion_localidad_id);
       const empId = Number(a.asignacion_empleado_id);
 
-      const aStart = new Date(a.asignacion_fecha_desde);
-      const aEnd = new Date(a.asignacion_fecha_hasta);
+      const aStart = ymdToLocalDate(a.asignacion_fecha_desde);
+      const aEnd = ymdToLocalDate(a.asignacion_fecha_hasta);
       aStart.setHours(0, 0, 0, 0);
       aEnd.setHours(0, 0, 0, 0);
 
@@ -215,8 +220,8 @@ export default function Planificacion() {
       const locId = Number(a.asignacion_localidad_id);
       const empId = Number(a.asignacion_empleado_id);
 
-      const aStart = new Date(a.asignacion_fecha_desde);
-      const aEnd = new Date(a.asignacion_fecha_hasta);
+      const aStart = ymdToLocalDate(a.asignacion_fecha_desde);
+      const aEnd = ymdToLocalDate(a.asignacion_fecha_hasta);
       aStart.setHours(0, 0, 0, 0);
       aEnd.setHours(0, 0, 0, 0);
 

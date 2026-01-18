@@ -29,12 +29,12 @@ export default function AddItem({ title = "Agregar", children, onSubmit, onClose
         <Modal title={title} onClose={() => {setOpen(false);if (onClose) onClose();}}>
           <form onSubmit={handleSubmit} className="flex flex-col max-h-[85vh]">
             {/* Contenido con scroll */}
-            <div className="space-y-4 overflow-y-auto pr-2 flex-1">
+            <div className="space-y-4 pr-2 flex-1">
               {children}
             </div>
 
             {/* Botones fijos al final */}
-            <div className="flex justify-end gap-2 pt-3  sticky bottom-0">
+            <div className="flex justify-end gap-2 pt-3  p-2 bottom-0">
               <Button variant="gray" onClick={() => {setOpen(false); if (onClose) onClose()}}>
                 Cancelar
               </Button>

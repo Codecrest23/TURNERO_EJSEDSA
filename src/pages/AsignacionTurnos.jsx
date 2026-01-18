@@ -544,8 +544,8 @@ export default function AsignacionTurnos() {
             <td className="px-6 py-3 ">{a.empleados?.empleado_nombre_apellido}</td>
             <td className="px-6 py-3 flex items-center gap-2"><div className="line-clamp-2">{a.turnos?.turno_nombre}</div></td>
             <td className="px-6 py-3">{a.turnos?.turno_motivo}</td>
-            <td className="px-6 py-3">{new Date(a.asignacion_fecha_desde).toLocaleDateString("es-AR")}</td>
-            <td className="px-6 py-3">{new Date(a.asignacion_fecha_hasta).toLocaleDateString("es-AR")}</td>
+            <td className="px-6 py-3">{new Date(a.asignacion_fecha_desde).toLocaleDateString("es-AR", { timeZone: "UTC" })}</td>
+            <td className="px-6 py-3">{new Date(a.asignacion_fecha_hasta).toLocaleDateString("es-AR", { timeZone: "UTC" })}</td>
             <td className="px-6 py-3 max-w-xs"> <div className="line-clamp-2">{a.asignacion_comentario || "-"}</div></td>
             <td className="px-6 py-3 text-center">
               <ButtonSmall
@@ -744,8 +744,8 @@ export default function AsignacionTurnos() {
               ¿Seguro que deseas eliminar la asignación de {" "}
               <b>{asignacionEliminar?.empleados?.empleado_nombre_apellido}</b>?<br />
               Turno: <b>{asignacionEliminar?.turnos?.turno_nombre}</b><br />
-              Desde: <b>{new Date(asignacionEliminar?.asignacion_fecha_desde).toLocaleDateString("es-AR")}</b><br />
-              Hasta: <b>{new Date(asignacionEliminar?.asignacion_fecha_hasta).toLocaleDateString("es-AR")}</b>
+              Desde: <b>{new Date(asignacionEliminar?.asignacion_fecha_desde).toLocaleDateString("es-AR", { timeZone: "UTC" })}</b><br />
+              Hasta: <b>{new Date(asignacionEliminar?.asignacion_fecha_hasta).toLocaleDateString("es-AR", { timeZone: "UTC" })}</b>
             </p>
             <div className="flex justify-center gap-2">
               <Button variant="gray" onClick={() => setAsignacionEliminar(null)}>

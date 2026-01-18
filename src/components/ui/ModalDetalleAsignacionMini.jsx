@@ -10,11 +10,11 @@ export default function ModalDetalleAsignacionMini({ asignacion, onClose }) {
   const localidad = asignacion.localidades;
 
   const desde = asignacion.asignacion_fecha_desde
-    ? new Date(asignacion.asignacion_fecha_desde).toLocaleDateString("es-AR")
+    ? new Date(asignacion.asignacion_fecha_desde).toLocaleDateString("es-AR", { timeZone: "UTC" })
     : "-";
 
   const hasta = asignacion.asignacion_fecha_hasta
-    ? new Date(asignacion.asignacion_fecha_hasta).toLocaleDateString("es-AR")
+    ? new Date(asignacion.asignacion_fecha_hasta).toLocaleDateString("es-AR", { timeZone: "UTC" })
     : "-";
 
   return (

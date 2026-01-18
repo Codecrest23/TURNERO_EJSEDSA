@@ -291,9 +291,9 @@ if (TurnoEditando.tieneHorarios) {
 
       {/* Modal editar */}
       {TurnoEditando && (<Modal title="Editar Turno/Licencia" onClose={() => setTurnoEditando(null)}>
-      <form onSubmit={handleEditarSubmit} className="space-y-4 max-h-[80vh] overflow-y-auto pr-2">
+      <form onSubmit={handleEditarSubmit} className="space-y-4 max-h-[80vh]  pr-2">
         <TurnoForm turno={TurnoEditando} setTurno={setTurnoEditando} localidades={localidades} />
-        <div className="flex justify-end gap-2 pt-2 sticky bottom-0 bg-white border-t">
+        <div className="flex justify-end gap-2 pt-2  p-2 bottom-0 bg-white border-t">
           <Button variant="gray"onClick={() => setTurnoEditando(null)}>Cancelar</Button>
           <Button type="submit" variant="warning">Guardar</Button>
         </div>

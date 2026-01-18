@@ -4,7 +4,7 @@ import { useEmpleados } from "../hooks/useEmpleados";
 import { useTurnos } from "../hooks/useTurnos";
 import { useLocalidades } from "../hooks/useLocalidades";
 import { useZonas } from "../hooks/useZonas";
-import {SquareStack} from "lucide-react"
+import { SquareStack } from "lucide-react"
 
 import Table from "../components/ui/Table";
 import Button from "../components/ui/Button";
@@ -18,6 +18,11 @@ import FiltroZona from "../components/ui/Filtros/FiltroZona";
 import FiltroFecha from "../components/ui/Filtros/FiltroFecha";
 
 import * as XLSX from "xlsx";
+function ymdToLocalDate(ymd) {
+  if (!ymd) return null;
+  const [y, m, d] = String(ymd).slice(0, 10).split("-");
+  return new Date(Number(y), Number(m) - 1, Number(d));
+}
 
 export default function InformeHistorico() {
   const { asignaciones, loading } = useAsignaciones();
@@ -51,9 +56,10 @@ export default function InformeHistorico() {
     const zonaOk =
       filtroZonas.length === 0 ||
       filtroZonas.some((f) => Number(f.value) === Number(a.localidades?.zonas?.id_zona));
-  // 🔹 Filtro por fechas
-    const fechaDesdeAsignacion = new Date(a.asignacion_fecha_desde);
-    const fechaHastaAsignacion = new Date(a.asignacion_fecha_hasta);
+    // 🔹 Filtro por fechas
+    const fechaDesdeAsignacion = ymdToLocalDate(a.asignacion_fecha_desde);
+    const fechaHastaAsignacion = ymdToLocalDate(a.asignacion_fecha_hasta);
+
 
     const fechaDesdeOk =
       !filtroFechaDesde || fechaHastaAsignacion >= filtroFechaDesde;
@@ -71,8 +77,8 @@ export default function InformeHistorico() {
       Empleado: a.empleados?.empleado_nombre_apellido ?? "",
       Turno: a.turnos?.turno_nombre ?? "",
       Motivo: a.turnos?.turno_motivo ?? "",
-      Desde: a.asignacion_fecha_desde ? new Date(a.asignacion_fecha_desde).toLocaleDateString("es-AR") : "",
-      Hasta: a.asignacion_fecha_hasta ? new Date(a.asignacion_fecha_hasta).toLocaleDateString("es-AR") : "",
+      Desde: a.asignacion_fecha_desde ? new Date(a.asignacion_fecha_desde).toLocaleDateString("es-AR", { timeZone: "UTC" }) : "",
+      Hasta: a.asignacion_fecha_hasta ? new Date(a.asignacion_fecha_hasta).toLocaleDateString("es-AR", { timeZone: "UTC" }) : "",
     }));
 
     const ws = XLSX.utils.json_to_sheet(filas);
@@ -103,15 +109,15 @@ export default function InformeHistorico() {
         <FiltroLocalidad localidades={localidades} value={filtroLocalidades} onChange={setFiltroLocalidades} />
         {/* <FiltroTurno turnos={turnos} value={filtroTurnos} onChange={setFiltroTurnos} /> */}
         <FiltroZona zonas={zonas} value={filtroZonas} onChange={setFiltroZonas} />
-         {/* 🟢 NUEVOS filtros de fecha */}
-        <FiltroFecha label="Desde" value={filtroFechaDesde} onChange={setFiltroFechaDesde}placeholder="Fecha desde"/>
-        <FiltroFecha label="Hasta" value={filtroFechaHasta} onChange={setFiltroFechaHasta} minDate={filtroFechaDesde} placeholder="Fecha hasta"/>
-      </div> 
-      
-      <Button variant="gray" onClick={() => {setFiltroFechaDesde(null);setFiltroFechaHasta(null);}}>
+        {/* 🟢 NUEVOS filtros de fecha */}
+        <FiltroFecha label="Desde" value={filtroFechaDesde} onChange={setFiltroFechaDesde} placeholder="Fecha desde" />
+        <FiltroFecha label="Hasta" value={filtroFechaHasta} onChange={setFiltroFechaHasta} minDate={filtroFechaDesde} placeholder="Fecha hasta" />
+      </div>
+
+      <Button variant="gray" onClick={() => { setFiltroFechaDesde(null); setFiltroFechaHasta(null); }}>
         Limpiar fechas
       </Button>
-       <div className="flex justify-end">
+      <div className="flex justify-end">
         <Button variant="excel" onClick={exportarExcel}>
           <span className="flex items-center gap-2">
             <FileDown className="w-4 h-4" />
@@ -122,7 +128,7 @@ export default function InformeHistorico() {
 
       <Table
         headers={[
-          "Zona","Localidad","Empleado","Turno","Motivo","Desde","Hasta","Tipo"
+          "Zona", "Localidad", "Empleado", "Turno", "Motivo", "Desde", "Hasta", "Tipo"
         ]}
       >
         {filteredAsignaciones.map((a) => (
@@ -132,8 +138,8 @@ export default function InformeHistorico() {
             <td className="px-6 py-3">{a.empleados?.empleado_nombre_apellido}</td>
             <td className="px-6 py-3">{a.turnos?.turno_nombre}</td>
             <td className="px-6 py-3">{a.turnos?.turno_motivo}</td>
-            <td className="px-6 py-3">{new Date(a.asignacion_fecha_desde).toLocaleDateString("es-AR")}</td>
-            <td className="px-6 py-3">{new Date(a.asignacion_fecha_hasta).toLocaleDateString("es-AR")}</td>
+            <td className="px-6 py-3">{new Date(a.asignacion_fecha_desde).toLocaleDateString("es-AR", { timeZone: "UTC" })}</td>
+            <td className="px-6 py-3">{new Date(a.asignacion_fecha_hasta).toLocaleDateString("es-AR", { timeZone: "UTC" })}</td>
             <td className="px-6 py-3">{a.asignacion_estado}</td>
           </tr>
         ))}

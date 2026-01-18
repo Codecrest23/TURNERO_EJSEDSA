@@ -36,12 +36,12 @@ export default function ModalDetalleAsignacion({ asignacion, onClose }) {
           <Detail label="Días Excedidos?" value={asignacion.asignacion_estado || "-"} />
           <Detail
             label="Desde"
-            value={new Date(asignacion.asignacion_fecha_desde).toLocaleDateString("es-AR")}
+            value={new Date(asignacion.asignacion_fecha_desde).toLocaleDateString("es-AR", { timeZone: "UTC" })}
           />
 
           <Detail
             label="Hasta"
-            value={new Date(asignacion.asignacion_fecha_hasta).toLocaleDateString("es-AR")}
+            value={new Date(asignacion.asignacion_fecha_hasta).toLocaleDateString("es-AR", { timeZone: "UTC" })}
           />
         </div>
 
